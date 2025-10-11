@@ -92,6 +92,129 @@
             transform: translateY(0);
         }
 
+        /* Fullscreen button (pill style) */
+        .header-fullscreen-btn {
+            position: absolute;
+            right: 150px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            z-index: 1000;
+        }
+
+        .header-fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Draggable fullscreen button in fullscreen mode */
+        .draggable-fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 18px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: move;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            z-index: 10000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+
+        .draggable-fullscreen-btn:hover {
+            background: rgba(118, 75, 162, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .draggable-fullscreen-btn.dragging {
+            cursor: grabbing;
+            transform: scale(1.15);
+        }
+
+        /* Fullscreen mode styles */
+        body.fullscreen-mode {
+            overflow: hidden;
+        }
+
+        .container.fullscreen-active {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            z-index: 9999 !important;
+            background: #000 !important;
+        }
+
+        .container.fullscreen-active .header {
+            display: none !important;
+        }
+
+        .container.fullscreen-active .content {
+            padding: 0 !important;
+            height: 100vh !important;
+            display: block !important;
+        }
+
+        .container.fullscreen-active .login-section {
+            display: none !important;
+        }
+
+        .container.fullscreen-active .viewer-section {
+            display: block !important;
+            height: 100vh !important;
+        }
+
+        .container.fullscreen-active .message {
+            display: none !important;
+        }
+
+        .container.fullscreen-active .screen-viewer {
+            border-radius: 0 !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
         .content {
             padding: 15px;
         }
@@ -472,6 +595,13 @@
                 justify-content: center;
             }
 
+            .header-fullscreen-btn {
+                position: static;
+                margin-top: 15px;
+                margin-right: 10px;
+                width: auto;
+            }
+
             .header {
                 flex-direction: column;
             }
@@ -528,12 +658,18 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Draggable Fullscreen Exit Button -->
+    <button class="draggable-fullscreen-btn" id="draggableFullscreenBtn" title="Exit Fullscreen">F</button>
+
     <div class="container login-mode" id="mainContainer">
         <div class="header" id="headerElement">
             <div>
                 <h1>🖥️ Screen Share Viewer</h1>
                 <p id="headerDescription">Enter the security code to view the shared screen</p>
             </div>
+            <button class="header-fullscreen-btn" id="headerFullscreenBtn" style="display: none;" title="Fullscreen">
+                F
+            </button>
             <button class="header-disconnect-btn" id="headerDisconnectBtn" style="display: none;">
                 <span>●</span> Disconnect
             </button>
@@ -604,6 +740,8 @@
         const loadingIndicator = document.getElementById('loadingIndicator');
         const disconnectBtn = document.getElementById('disconnectBtn');
         const headerDisconnectBtn = document.getElementById('headerDisconnectBtn');
+        const headerFullscreenBtn = document.getElementById('headerFullscreenBtn');
+        const draggableFullscreenBtn = document.getElementById('draggableFullscreenBtn');
         const headerDescription = document.getElementById('headerDescription');
         const toastContainer = document.getElementById('toastContainer');
 
@@ -821,6 +959,7 @@
             // Update header - hide description, show disconnect button
             headerDescription.style.display = 'none';
             headerDisconnectBtn.style.display = 'flex';
+            headerFullscreenBtn.style.display = 'flex';
 
             showToast('info', 'Loading Stream...', 'Initializing screen share connection...', 3000);
 
@@ -863,10 +1002,29 @@
             screenViewer.addEventListener('click', function(e) {
                 if (isDragging) return;
                 
+                // Get click position relative to the viewer before toggling zoom
+                const rect = screenViewer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                // Calculate the relative position (0 to 1) of the click within the viewer
+                const relativeX = clickX / rect.width;
+                const relativeY = clickY / rect.height;
+                
                 isZoomed = !isZoomed;
                 screenViewer.classList.toggle('zoomed', isZoomed);
                 
                 if (isZoomed) {
+                    // Wait for the zoom transition to complete, then scroll to clicked point
+                    setTimeout(() => {
+                        // Calculate the new scroll position to center the clicked point
+                        const newScrollLeft = (screenViewer.scrollWidth * relativeX) - (rect.width / 2);
+                        const newScrollTop = (screenViewer.scrollHeight * relativeY) - (rect.height / 2);
+                        
+                        screenViewer.scrollLeft = Math.max(0, newScrollLeft);
+                        screenViewer.scrollTop = Math.max(0, newScrollTop);
+                    }, 50);
+                    
                     showToast('info', 'Zoomed In', 'Drag to pan around. Click again to zoom out.', 3000);
                 } else {
                     showToast('info', 'Zoomed Out', 'Click to zoom in again.', 2000);
@@ -907,6 +1065,92 @@
                 isDragging = false;
             });
         }
+
+        // Fullscreen functionality
+        let isFullscreen = false;
+
+        // Double-click on header button to toggle fullscreen
+        headerFullscreenBtn.addEventListener('dblclick', toggleFullscreen);
+        
+        // Single click removed, now only double-click works
+        // draggableFullscreenBtn click is handled in mouseup event below
+
+        function toggleFullscreen() {
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                // Enter fullscreen
+                document.body.classList.add('fullscreen-mode');
+                mainContainer.classList.add('fullscreen-active');
+                draggableFullscreenBtn.style.display = 'flex';
+                showToast('info', 'Fullscreen Mode', 'Press F or Esc to exit. Double-click F button to exit.', 3000);
+            } else {
+                // Exit fullscreen
+                document.body.classList.remove('fullscreen-mode');
+                mainContainer.classList.remove('fullscreen-active');
+                draggableFullscreenBtn.style.display = 'none';
+                showToast('info', 'Normal Mode', 'Exited fullscreen mode.', 2000);
+            }
+        }
+
+        // Keyboard shortcuts for fullscreen
+        document.addEventListener('keydown', function(e) {
+            // F key to toggle fullscreen (only when connected and viewing)
+            if (e.key === 'f' || e.key === 'F') {
+                if (isConnected && !loginSection.style.display.includes('block')) {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            }
+            // Esc key to exit fullscreen
+            else if (e.key === 'Escape' && isFullscreen) {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+        });
+
+        // Make fullscreen button draggable
+        let isDraggingBtn = false;
+        let btnOffsetX, btnOffsetY;
+        let hasMoved = false;
+
+        draggableFullscreenBtn.addEventListener('mousedown', function(e) {
+            isDraggingBtn = true;
+            hasMoved = false;
+            btnOffsetX = e.clientX - draggableFullscreenBtn.offsetLeft;
+            btnOffsetY = e.clientY - draggableFullscreenBtn.offsetTop;
+            draggableFullscreenBtn.classList.add('dragging');
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDraggingBtn) return;
+            
+            hasMoved = true;
+            const x = e.clientX - btnOffsetX;
+            const y = e.clientY - btnOffsetY;
+            
+            // Keep button within viewport
+            const maxX = window.innerWidth - draggableFullscreenBtn.offsetWidth;
+            const maxY = window.innerHeight - draggableFullscreenBtn.offsetHeight;
+            
+            draggableFullscreenBtn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            draggableFullscreenBtn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+            draggableFullscreenBtn.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isDraggingBtn) {
+                isDraggingBtn = false;
+                draggableFullscreenBtn.classList.remove('dragging');
+            }
+        });
+
+        // Double-click on draggable button to toggle fullscreen
+        draggableFullscreenBtn.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            toggleFullscreen();
+        });
 
         // Connection health check
         function startConnectionCheck() {
@@ -997,6 +1241,15 @@
             // Reset header
             headerDescription.style.display = 'block';
             headerDisconnectBtn.style.display = 'none';
+            headerFullscreenBtn.style.display = 'none';
+            
+            // Exit fullscreen if active
+            if (isFullscreen) {
+                document.body.classList.remove('fullscreen-mode');
+                mainContainer.classList.remove('fullscreen-active');
+                draggableFullscreenBtn.style.display = 'none';
+                isFullscreen = false;
+            }
             
             screenImage.src = '';
             screenImage.style.display = 'none';
