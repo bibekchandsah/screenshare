@@ -35,11 +35,60 @@ class ScreenShareClient:
             self.client_socket.send((security_code + '\n').encode('utf-8'))
             
             # Wait for authorization response
-            response = self.client_socket.recv(1024).decode('utf-8').strip()
-            if show_debug:
-                print(f"[DEBUG] Server response: '{response}'")
+            try:
+                response = self.client_socket.recv(1024).decode('utf-8').strip()
+                if show_debug:
+                    print(f"[DEBUG] Server response: '{response}'")
+            except UnicodeDecodeError:
+                print("[-] Connection error: Invalid server response")
+                self.client_socket.close()
+                return False
             
-            if response == "AUTHORIZED":
+            if response == "WAITING_APPROVAL":
+                # Server is waiting for manual approval
+                print("[*] Waiting for server to approve connection...")
+                print("[*] Please wait while the server operator reviews your request.\n")
+                
+                # Set a timeout for waiting approval (60 seconds)
+                self.client_socket.settimeout(60.0)
+                
+                try:
+                    approval_response = self.client_socket.recv(1024).decode('utf-8').strip()
+                    
+                    if approval_response == "APPROVED":
+                        if show_debug:
+                            print("[+] Successfully connected to server!")
+                        self.connected = True
+                        self.client_socket.settimeout(None)  # Remove timeout
+                        return True
+                    elif approval_response == "REJECTED":
+                        print("[-] Server connection rejected!")
+                        print("[-] Try again in a few moments!")
+                        self.client_socket.close()
+                        return False
+                    else:
+                        print(f"[-] Unexpected response: {approval_response}")
+                        self.client_socket.close()
+                        return False
+                        
+                except socket.timeout:
+                    print("[-] Connection approval timeout!")
+                    print("[-] Server did not respond in time. Try again later.")
+                    self.client_socket.close()
+                    return False
+                except UnicodeDecodeError:
+                    print("[-] Server connection rejected!")
+                    print("[-] Try again in a few moments!")
+                    self.client_socket.close()
+                    return False
+                except (ConnectionResetError, ConnectionAbortedError, OSError):
+                    print("[-] Server connection rejected!")
+                    print("[-] Try again in a few moments!")
+                    self.client_socket.close()
+                    return False
+                    
+            elif response == "AUTHORIZED":
+                # Old behavior for backward compatibility
                 if show_debug:
                     print("[+] Successfully connected to server!")
                 self.connected = True
@@ -51,6 +100,17 @@ class ScreenShareClient:
                 
         except ConnectionRefusedError:
             print("[-] Connection refused. Make sure the server is running.")
+            return False
+        except (ConnectionResetError, ConnectionAbortedError, OSError) as e:
+            if "connection" in str(e).lower() or "reset" in str(e).lower():
+                print("[-] Server closed the connection unexpectedly")
+                print("[-] The connection may have been rejected")
+            else:
+                print(f"[-] Connection error: {e}")
+            return False
+        except UnicodeDecodeError:
+            print("[-] Connection error: Invalid server response")
+            print("[-] The connection may have been rejected")
             return False
         except Exception as e:
             print(f"[-] Connection error: {e}")

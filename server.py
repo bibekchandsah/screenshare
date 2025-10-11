@@ -40,10 +40,23 @@ class ScreenShareServer:
             print(f"[DEBUG] Codes match: {received_code == self.security_code}")
             
             if received_code == self.security_code:
-                client_socket.send(b"AUTHORIZED\n")
-                print(f"[+] Client {address} authorized successfully")
+                # Code is correct, now ask for manual approval
+                print(f"\n{'='*60}")
+                print(f"[!] Connection request from {address}")
+                print(f"{'='*60}")
                 
-                self.clients.append(client_socket)
+                # Send waiting status to client
+                client_socket.send(b"WAITING_APPROVAL\n")
+                
+                # Ask server operator for approval
+                approval = input("Do you want to allow this connection? (y/n): ").strip().lower()
+                
+                if approval in ['y', 'yes']:
+                    # Approved
+                    client_socket.send(b"APPROVED\n")
+                    print(f"[+] Client {address} connection approved")
+                    
+                    self.clients.append(client_socket)
                 
                 # Stream screen to this client
                 while self.sharing:
@@ -87,6 +100,10 @@ class ScreenShareServer:
                     except Exception as e:
                         print(f"[-] Unexpected error sending to {address}: {e}")
                         break
+                else:
+                    # Rejected
+                    client_socket.send(b"REJECTED\n")
+                    print(f"[-] Client {address} connection rejected")
             else:
                 client_socket.send(b"UNAUTHORIZED\n")
                 print(f"[-] Client {address} provided wrong code: '{received_code}'")
