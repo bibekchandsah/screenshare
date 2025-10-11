@@ -1,15 +1,34 @@
 # Real-Time Screen Sharing Application
 
-A Python-based screen sharing application with security code authentication. Share your screen securely with others in real-time!
+A Python-based screen sharing application with security code authentication and advanced web viewing features. Share your screen securely with others in real-time with professional quality!
 
 ## Features
 
-- 🔒 **Secure Connection**: Random security code generation for each session
-- 📺 **Real-time Streaming**: Live screen capture and streaming
+### Core Features
+- 🔒 **Secure Connection**: Random security code generation + manual approval system
+- 📺 **Real-time Streaming**: Live screen capture and streaming at high quality
 - 🚀 **Easy to Use**: Simple menu-driven interface
 - 🔌 **Network Support**: Works over LAN or localhost
-- 👥 **Multiple Viewers**: Support for multiple simultaneous viewers
+- 👥 **Multiple Viewers**: Support for unlimited simultaneous viewers
 - 🎯 **Unified Launcher**: Single entry point with menu options
+
+### Advanced Web Features (NEW! ✨)
+- 📱 **Mobile Friendly**: Responsive design works on phones, tablets, and desktops
+- 🖼️ **High Quality**: 100% resolution at 95% JPEG quality for crystal-clear viewing
+- 🔍 **Interactive Zoom**: Click to zoom into any section, drag to pan around
+- 🎬 **Fullscreen Mode**: Immersive viewing with draggable controls
+- ⌨️ **Keyboard Shortcuts**: F key for fullscreen, Esc to exit
+- 🎨 **Modern UI**: Clean, professional interface with individual digit input boxes
+- 📢 **Toast Notifications**: Real-time status updates for all events
+- 🔌 **Connection Monitoring**: Automatic disconnection detection
+- ⚡ **Smooth Performance**: 20 FPS streaming with optimized JPEG encoding
+- 🎮 **Touch Support**: Full touch gesture support for mobile devices
+
+### Security Features
+- 🔐 **Two-Factor Security**: Security code + manual server approval
+- 🛡️ **Session Management**: Unique session IDs for each connection
+- 📋 **Queue System**: Sequential approval processing for multiple requests
+- 🚫 **Thread-Safe**: Race condition prevention with proper locking
 
 ## Requirements
 
@@ -97,36 +116,55 @@ Do you want to allow this connection? (y/n): y
    - Make sure it's connected to the **same WiFi network** as your PC
    - Open a web browser (Chrome, Safari, Firefox, etc.)
    - Enter the URL shown (e.g., `http://192.168.1.100:8080`)
-   - Enter the security code
+   - Enter the security code in individual digit boxes (auto-focus, paste support)
    - Wait for server approval
-   - View the screen in real-time!
+   - View the screen in real-time with high quality!
 
 5. Press `Ctrl+C` on the server to stop sharing
 
-**Mobile Browser Features:**
-- ✅ Responsive design - works on any screen size
-- ✅ Touch-friendly interface
-- ✅ No app installation required
-- ✅ Works on iOS, Android, tablets, laptops
-- ✅ Lower bandwidth usage optimized for mobile
-- ✅ Smooth streaming at 10 FPS
+**Web Browser Features:**
+- ✅ **Responsive Design**: Works perfectly on any screen size
+- ✅ **Touch-Friendly Interface**: Optimized for mobile gestures
+- ✅ **No App Installation**: Just open a browser
+- ✅ **High Quality**: 100% resolution at 95% JPEG quality
+- ✅ **Interactive Zoom**: 
+  - Click anywhere to zoom into that section
+  - Drag to pan when zoomed in
+  - Click again to zoom out
+- ✅ **Fullscreen Mode**: 
+  - Double-click the F button to enter fullscreen
+  - Drag the F button anywhere on screen
+  - Press F key or Esc key to exit
+  - Double-click F button again to exit
+- ✅ **Keyboard Shortcuts**:
+  - `F` key → Toggle fullscreen mode
+  - `Esc` key → Exit fullscreen mode
+- ✅ **Individual Digit Boxes**: Easy code entry with paste support
+- ✅ **Toast Notifications**: Real-time status updates
+- ✅ **Connection Monitoring**: Auto-detects server disconnection
+- ✅ **Smooth Streaming**: 20 FPS for fluid motion
+- ✅ **Multi-User Support**: Unlimited simultaneous viewers
+- ✅ **Cross-Platform**: Works on iOS, Android, Windows, macOS, Linux
 
 **Example Output:**
 ```
 🌐 WEB BROWSER SCREEN SHARE MODE
 ============================================================
 
-==================================================
+============================================================
 SECURITY CODE: XK9M2P
-==================================================
+============================================================
 Share this code with the person who wants to view your screen
-==================================================
+Multiple viewers can connect simultaneously!
+============================================================
 
 [*] Access the screen share from your browser at:
     http://192.168.1.100:8080
     http://localhost:8080
 
 [*] Server starting on 0.0.0.0:8080
+[*] Multi-user support enabled
+[*] Approval processor started - requests will be handled sequentially
 [*] Press Ctrl+C to stop sharing
 ```
 
@@ -211,9 +249,32 @@ If your phone can't connect, you may need to allow the port through Windows Fire
 ### **Tips for Mobile Viewing:**
 - ✅ Use the same WiFi network
 - ✅ Use landscape mode for better viewing
-- ✅ Enable full-screen in browser
+- ✅ Double-click F button or use F key for fullscreen
+- ✅ Click on any area to zoom in, drag to pan
 - ✅ Stable connection = smoother streaming
 - ✅ Close unnecessary apps on phone for better performance
+- ✅ Use paste functionality for quick code entry (long-press in code box)
+
+### **Web Interface Controls:**
+
+**Zoom Features:**
+- **Click to Zoom**: Click anywhere on the screen to zoom into that exact section
+- **Drag to Pan**: When zoomed, drag with mouse/finger to move around
+- **Click to Zoom Out**: Click again to return to fit-to-screen view
+
+**Fullscreen Features:**
+- **Enter Fullscreen**: 
+  - Double-click the F button in header
+  - OR press F key on keyboard
+- **Exit Fullscreen**: 
+  - Press Esc key
+  - OR press F key again
+  - OR double-click the draggable F button
+- **Move F Button**: Drag the F button to any position when in fullscreen
+
+**Keyboard Shortcuts:**
+- `F` → Toggle fullscreen mode (when viewing screen)
+- `Esc` → Exit fullscreen mode (when in fullscreen)
 
 ---
 
@@ -274,8 +335,20 @@ You can customize the following settings by editing the source code:
 ### Web Server (`web_server.py`) 🆕
 - **Port**: Change `port=8080` in the `ScreenShareWebServer` initialization
 - **Code Length**: Change `length=6` in `generate_security_code()` method
-- **Image Quality**: Adjust `scale_percent` (50% for mobile) and JPEG quality (70)
-- **Frame Rate**: Adjust `time.sleep(0.1)` for different FPS (currently 10 FPS)
+- **Image Quality**: 
+  - Adjust `scale_percent` (currently 100% for maximum quality) in `capture_screen_loop()`
+  - Adjust JPEG quality (currently 95 for excellent quality)
+  - Line 62-65: JPEG encoding parameters
+- **Frame Rate**: Adjust `time.sleep(0.05)` for different FPS (currently 20 FPS)
+- **Interpolation**: Uses `cv2.INTER_LANCZOS4` for best quality when scaling
+- **Progressive JPEG**: Enabled for better streaming performance
+
+**Quality Settings Explained:**
+- `scale_percent = 100`: Full resolution (100% of original)
+- `JPEG_QUALITY = 95`: Near-lossless compression
+- `JPEG_OPTIMIZE = 1`: Optimize file size
+- `JPEG_PROGRESSIVE = 1`: Progressive rendering for web
+- `INTER_LANCZOS4`: Highest quality interpolation algorithm
 
 ### Client (`client.py`)
 - Default port can be changed in the main() function
@@ -333,8 +406,31 @@ You can customize the following settings by editing the source code:
 ### Stream is Laggy on Mobile
 - Move closer to WiFi router
 - Close other apps using bandwidth
-- Lower quality in `web_server.py` (reduce `scale_percent` or JPEG quality)
+- Lower quality in `web_server.py` (reduce `scale_percent` from 100 to 75 or 50)
 - Use 5GHz WiFi instead of 2.4GHz if available
+- Try reducing frame rate (increase `time.sleep(0.05)` to `0.1` for 10 FPS)
+
+### Zoom Not Working Properly
+- Make sure you're clicking on the screen image area, not the background
+- Try clicking and waiting a moment for the zoom to process
+- If zoomed, try dragging to see if pan works
+- Refresh the page if zoom gets stuck
+
+### Fullscreen Issues
+- **F key not working**: Make sure you're viewing the screen (not on login page)
+- **Can't exit fullscreen**: Press Esc key or double-click the draggable F button
+- **White screen in fullscreen**: This has been fixed - refresh if you see it
+- **F button disappeared**: It might be dragged off-screen - exit and re-enter fullscreen
+
+### Multiple Connection Requests Overlapping
+- **FIXED**: Requests are now queued and processed one at a time
+- You'll see "Pending requests in queue: X" to know how many are waiting
+- Server won't crash if sessions timeout during approval
+
+### Server Crashes on Timeout
+- **FIXED**: Added comprehensive exception handling
+- Server continues running even if connections timeout
+- All resources are properly cleaned up
 
 ## Security Notes
 
@@ -358,22 +454,40 @@ You can customize the following settings by editing the source code:
 4. **Client** connects and sends the security code for authentication
 5. Server asks for manual approval before allowing connection
 6. Upon approval, client receives, deserializes, and displays frames continuously
-7. Automatic reconnection if connection drops
+7. Automatic reconnection if connection drops (3 attempts with 2-second delays)
 
 ### Web Browser Mode (Mobile-Friendly):
-1. **Web Server** captures screen continuously in a background thread
-2. Frames are compressed and stored in memory
-3. **HTTP Server** serves a responsive HTML/JavaScript interface
-4. Browser connects, sends security code via AJAX POST request
-5. Server validates code and asks for manual approval
-6. Upon approval, server sends session ID to browser
-7. Browser displays frames via MJPEG streaming (multipart/x-mixed-replace)
-8. Optimized for mobile with lower resolution and frame rate
-3. Compressed images are serialized with `pickle` and sent over TCP socket
-4. **Client** connects and sends the security code for authentication
-5. Upon successful authentication, client receives, deserializes, and displays frames continuously
-6. Security code ensures only authorized viewers can connect
-7. **Main Menu** (`main.py`) provides a unified interface to launch either server or client mode
+1. **Web Server** captures screen continuously at 100% resolution in a background thread
+2. Frames are compressed using JPEG (95% quality) with progressive encoding and optimization
+3. Uses LANCZOS4 interpolation for highest quality scaling
+4. Compressed frames stored in memory with thread-safe locking
+5. **HTTP Server** serves a responsive HTML/JavaScript interface with modern design
+6. **ThreadingHTTPServer** handles multiple simultaneous connections
+7. Browser connects, displays modern UI with individual digit input boxes
+8. Client enters security code, sends via AJAX POST request
+9. Server validates code and queues approval request
+10. **Sequential Approval Processing**: Requests processed one at a time in order (FIFO)
+11. Server asks for manual approval (shows queue status)
+12. Upon approval, server sends session ID to browser
+13. Browser receives frames via MJPEG streaming (multipart/x-mixed-replace boundary)
+14. Client can:
+    - **Zoom**: Click any area to zoom into that section (calculates relative position)
+    - **Pan**: Drag with mouse/touch when zoomed to navigate
+    - **Fullscreen**: Double-click F button or press F key
+    - **Exit Fullscreen**: Press Esc key or double-click F button
+    - **Move Controls**: Drag F button to any position
+15. **Connection Monitoring**: Browser checks `/health` endpoint every 3 seconds
+16. **Auto-disconnect Detection**: Shows notification if server disconnects
+17. Optimized for mobile with touch gestures and responsive layout
+18. 20 FPS streaming for smooth motion
+
+### Security & Threading:
+- **Two-Factor Security**: Security code + manual server approval
+- **Thread-Safe Operations**: All shared data protected with locks
+- **Approval Queue**: Sequential processing prevents overlapping prompts
+- **Race Condition Prevention**: Proper locking on all pending approvals
+- **Graceful Timeout Handling**: Sessions cleaned up properly without crashes
+- **Exception Handling**: Comprehensive error handling prevents server crashes
 
 ## Project Structure
 
@@ -394,9 +508,101 @@ screen share/
 - **`main.py`**: Unified launcher - start here! Provides a menu to choose between desktop/web sharing or desktop viewing.
 - **`server.py`**: Desktop server that captures and streams screen via TCP sockets. For PC-to-PC connections.
 - **`web_server.py`**: HTTP server for browser-based viewing. Perfect for mobile phones and tablets! 🆕
-- **`web_client.html`**: Responsive web interface with beautiful design. Works on any device with a browser. 🆕
+  - Features: 100% resolution, 95% JPEG quality, 20 FPS streaming
+  - Threading: ThreadingHTTPServer for multi-user support
+  - Security: Sequential approval queue system
+  - Thread-safe: Comprehensive locking mechanisms
+- **`web_client.html`**: Responsive web interface with modern features. 🆕
+  - **UI Components**: Individual digit input boxes with auto-focus and paste support
+  - **Zoom System**: Click-to-zoom with intelligent section targeting
+  - **Fullscreen**: Draggable controls with keyboard shortcuts (F, Esc)
+  - **Notifications**: Toast notification system for all events
+  - **Connection Monitoring**: Auto-detects disconnections via /health endpoint
+  - **Touch Support**: Full mobile gesture support
+  - **Responsive Design**: Works on all screen sizes
 - **`client.py`**: Desktop client that connects to server and displays shared screen in OpenCV window.
 - **`requirements.txt`**: Lists all required Python packages for easy installation.
+
+## Recent Updates & Improvements
+
+### Version 2.0 (Latest)
+✨ **Major Feature Additions:**
+- 🔍 **Intelligent Zoom**: Click anywhere to zoom into that exact section
+- 🎬 **Advanced Fullscreen**: Draggable F button with keyboard shortcuts
+- ⌨️ **Keyboard Controls**: F key for fullscreen, Esc to exit
+- 📢 **Toast Notifications**: Real-time status updates for all events
+- 📊 **Connection Monitoring**: Health check endpoint with auto-reconnect
+- 🎨 **Modern UI**: Individual digit boxes with paste support
+
+🛠️ **Performance Improvements:**
+- 📈 **Maximum Quality**: Upgraded to 100% resolution at 95% JPEG quality
+- 🚀 **Faster Streaming**: Increased to 20 FPS with progressive JPEG
+- 🎯 **Smart Interpolation**: LANCZOS4 algorithm for best quality
+- 🔧 **Optimized Encoding**: Progressive JPEG with optimization enabled
+
+🔒 **Security & Stability Enhancements:**
+- 🔐 **Approval Queue System**: Sequential processing of connection requests
+- 🛡️ **Thread-Safe Operations**: Comprehensive locking prevents race conditions
+- 🔄 **Graceful Timeout Handling**: No crashes on session timeouts
+- 🚫 **Exception Handling**: Robust error handling throughout
+- 📋 **Queue Status Display**: Shows pending requests count
+
+🐛 **Bug Fixes:**
+- ✅ Fixed: White screen in fullscreen mode (CSS display issue)
+- ✅ Fixed: KeyError on session timeout (race condition)
+- ✅ Fixed: Overlapping approval prompts (queue system)
+- ✅ Fixed: Server crashes on timeout (exception handling)
+- ✅ Fixed: Single-click fullscreen toggle (changed to double-click)
+- ✅ Fixed: Zoom centers on click position (not image center)
+
+## Technical Architecture
+
+### Threading Model:
+```
+Web Server Process
+├── Main Thread (HTTP Server)
+├── Screen Capture Thread (Background, continuous capture)
+├── Approval Processor Thread (Sequential approval handling)
+└── HTTP Handler Threads (One per client connection)
+    ├── Handles /verify endpoint
+    ├── Handles /stream endpoint (MJPEG)
+    └── Handles /health endpoint
+```
+
+### Data Flow:
+```
+Screen → mss.grab() → NumPy Array → cv2.resize() → JPEG Encode → Memory Buffer
+                                                                         ↓
+Browser ← MJPEG Stream ← HTTP Response ← ThreadingHTTPServer ← Memory Buffer
+```
+
+### Synchronization:
+- **frame_lock**: Protects current_frame buffer during read/write
+- **approval_lock**: Protects pending_approvals dictionary
+- **approval_queue**: Thread-safe queue for approval requests
+- All dictionary operations on shared data are protected
+
+### Web Client Architecture:
+```javascript
+Login View
+    ↓ (Security Code Verification)
+Session Established
+    ↓
+Viewer Screen (with controls)
+    ├── MJPEG Stream Display
+    ├── Health Check Interval (3s)
+    ├── Zoom Event Handlers
+    ├── Fullscreen Controls
+    └── Toast Notification System
+```
+
+### Performance Optimizations:
+1. **Screen Capture**: Single capture thread, shared buffer
+2. **JPEG Encoding**: Progressive with optimization
+3. **Streaming**: Direct memory-to-HTTP without file I/O
+4. **Threading**: Daemon threads for clean shutdown
+5. **Frame Rate Control**: Sleep-based limiting (0.05s = 20 FPS)
+6. **Image Quality**: LANCZOS4 interpolation for scaling
 
 ## License
 
@@ -409,6 +615,60 @@ Feel free to fork, modify, and improve this project!
 ## Support
 
 If you encounter any issues, please check the troubleshooting section or create an issue in the repository.
+
+## Quick Reference Card
+
+### For Server (PC Sharing Screen):
+```bash
+python main.py
+Choose option 2 (Web Browser)
+Share the security code and URL
+Approve connections when prompted
+Press Ctrl+C to stop
+```
+
+### For Viewer (Mobile/Browser):
+```
+1. Connect to same WiFi as server
+2. Open browser: http://SERVER_IP:8080
+3. Enter 6-digit security code
+4. Wait for approval
+5. Double-click F or press F key for fullscreen
+6. Click screen to zoom, drag to pan
+7. Press Esc to exit fullscreen
+```
+
+### Keyboard Shortcuts (Web Client):
+| Key | Action |
+|-----|--------|
+| `F` | Toggle fullscreen mode |
+| `Esc` | Exit fullscreen mode |
+
+### Mouse/Touch Controls (Web Client):
+| Action | Effect |
+|--------|--------|
+| **Single Click** | Zoom into clicked section |
+| **Drag** | Pan when zoomed (move around) |
+| **Click Again** | Zoom out to fit screen |
+| **Double-Click F Button** | Toggle fullscreen |
+| **Drag F Button** | Move button position (fullscreen) |
+
+### Connection URLs:
+- **Same PC**: `http://localhost:8080`
+- **Other Device**: `http://YOUR_PC_IP:8080`
+- **Find IP**: Run `ipconfig` (Windows) or `ifconfig` (Linux/Mac)
+
+### Ports Used:
+- **Desktop Mode**: Port 5555 (TCP)
+- **Web Mode**: Port 8080 (HTTP)
+
+### Default Settings:
+- **Resolution**: 100% (full quality)
+- **JPEG Quality**: 95% (near-lossless)
+- **Frame Rate**: 20 FPS
+- **Code Length**: 6 characters
+- **Approval Timeout**: 60 seconds
+- **Health Check**: Every 3 seconds
 
 ---
 
