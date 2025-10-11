@@ -18,8 +18,8 @@ git push -u origin main
 3) confirmation before closing screen preview
 4) in same wifi user can share screen in mobile devices too
 5) check the server connection and disconnection so that user can see when it's dissconnected or connected
-6) user from anywhere can see the shared screen
-7) user should be able to see the cursor too
+6) user should be able to see the cursor too
+7) user from anywhere can see the shared screen
 
 
 

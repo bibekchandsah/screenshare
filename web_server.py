@@ -25,6 +25,8 @@ class ScreenShareWebServer:
         self.active_streams = {}  # Track active streaming connections
         self.pending_approvals = {}  # session_id -> {'ip': ip, 'approved': None}
         self.approval_lock = threading.Lock()  # Lock for approval process
+        self.approval_queue = queue.Queue()  # Queue for approval requests
+        self.approval_processor_thread = None  # Thread to process approvals sequentially
         
     def generate_security_code(self, length=6):
         """Generate a random alphanumeric security code"""
@@ -87,45 +89,84 @@ class ScreenShareWebServer:
         """Verify if the provided security code is correct"""
         return code == self.security_code
     
+    def process_approval_queue(self):
+        """Process approval requests sequentially from the queue"""
+        while self.sharing:
+            try:
+                # Get approval request from queue (blocking with timeout)
+                approval_request = self.approval_queue.get(timeout=1)
+                if approval_request is None:  # Poison pill to stop thread
+                    break
+                
+                session_id = approval_request['session_id']
+                ip_address = approval_request['ip_address']
+                
+                # Add to pending approvals with lock
+                with self.approval_lock:
+                    if session_id not in self.pending_approvals:
+                        continue  # Skip if already timed out
+                    
+                print(f"\n{'='*60}")
+                print(f"[!] Web connection request from {ip_address}")
+                print(f"[!] Session: {session_id[:8]}...")
+                print(f"[!] Currently {len(self.authorized_sessions)} user(s) connected")
+                print(f"[!] Pending requests in queue: {self.approval_queue.qsize()}")
+                print(f"{'='*60}")
+                
+                approval = input("Do you want to allow this connection? (y/n): ").strip().lower()
+                
+                # Update approval status with lock and check if session still exists
+                with self.approval_lock:
+                    if session_id in self.pending_approvals:
+                        if approval in ['y', 'yes']:
+                            self.authorized_sessions.add(session_id)
+                            self.pending_approvals[session_id]['approved'] = True
+                            print(f"[+] Web client {ip_address} connection approved")
+                            print(f"[+] Total connected users: {len(self.authorized_sessions)}")
+                        else:
+                            self.pending_approvals[session_id]['approved'] = False
+                            print(f"[-] Web client {ip_address} connection rejected")
+                    else:
+                        # Session was already cleaned up (timeout)
+                        print(f"[-] Session {session_id[:8]}... timed out before approval")
+                
+                self.approval_queue.task_done()
+                
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"[-] Error processing approval: {e}")
+                continue
+    
     def request_approval(self, session_id, ip_address):
-        """Ask server operator for approval (non-blocking)"""
-        # Add to pending approvals
-        self.pending_approvals[session_id] = {'ip': ip_address, 'approved': None}
+        """Queue an approval request (non-blocking)"""
+        # Add to pending approvals with lock
+        with self.approval_lock:
+            self.pending_approvals[session_id] = {'ip': ip_address, 'approved': None}
         
-        print(f"\n{'='*60}")
-        print(f"[!] Web connection request from {ip_address}")
-        print(f"[!] Session: {session_id[:8]}...")
-        print(f"[!] Currently {len(self.authorized_sessions)} user(s) connected")
-        print(f"{'='*60}")
-        
-        approval = input("Do you want to allow this connection? (y/n): ").strip().lower()
-        
-        if approval in ['y', 'yes']:
-            self.authorized_sessions.add(session_id)
-            self.pending_approvals[session_id]['approved'] = True
-            print(f"[+] Web client {ip_address} connection approved")
-            print(f"[+] Total connected users: {len(self.authorized_sessions)}")
-            return True
-        else:
-            self.pending_approvals[session_id]['approved'] = False
-            print(f"[-] Web client {ip_address} connection rejected")
-            return False
+        # Add to approval queue
+        self.approval_queue.put({
+            'session_id': session_id,
+            'ip_address': ip_address
+        })
     
     def wait_for_approval(self, session_id, timeout=60):
         """Wait for approval decision (with timeout)"""
         start_time = time.time()
         while time.time() - start_time < timeout:
-            if session_id in self.pending_approvals:
-                approval_status = self.pending_approvals[session_id]['approved']
-                if approval_status is not None:
-                    # Clean up
-                    del self.pending_approvals[session_id]
-                    return approval_status
+            with self.approval_lock:
+                if session_id in self.pending_approvals:
+                    approval_status = self.pending_approvals[session_id]['approved']
+                    if approval_status is not None:
+                        # Clean up
+                        del self.pending_approvals[session_id]
+                        return approval_status
             time.sleep(0.1)
         
-        # Timeout
-        if session_id in self.pending_approvals:
-            del self.pending_approvals[session_id]
+        # Timeout - clean up with lock
+        with self.approval_lock:
+            if session_id in self.pending_approvals:
+                del self.pending_approvals[session_id]
         return False
     
     def create_request_handler(self):
@@ -223,63 +264,74 @@ class ScreenShareWebServer:
             
             def do_POST(self):
                 """Handle POST requests"""
-                if self.path == '/verify':
-                    # Verify security code
-                    content_length = int(self.headers['Content-Length'])
-                    post_data = self.rfile.read(content_length)
-                    data = json.loads(post_data.decode('utf-8'))
-                    
-                    code = data.get('code', '').strip().upper()
-                    
-                    if server_instance.verify_security_code(code):
-                        # Generate session ID
-                        session_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+                try:
+                    if self.path == '/verify':
+                        # Verify security code
+                        content_length = int(self.headers['Content-Length'])
+                        post_data = self.rfile.read(content_length)
+                        data = json.loads(post_data.decode('utf-8'))
                         
-                        # Start approval in a separate thread (non-blocking)
-                        def get_approval():
+                        code = data.get('code', '').strip().upper()
+                        
+                        if server_instance.verify_security_code(code):
+                            # Generate session ID
+                            session_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+                            
+                            # Queue the approval request (will be processed sequentially)
                             server_instance.request_approval(
                                 session_id, 
                                 self.client_address[0]
                             )
-                        
-                        approval_thread = threading.Thread(target=get_approval, daemon=True)
-                        approval_thread.start()
-                        
-                        # Wait for approval with timeout (this is in HTTP handler thread, so it won't block other requests)
-                        approved = server_instance.wait_for_approval(session_id, timeout=60)
-                        
-                        if approved:
-                            self.send_response(200)
-                            self.send_header('Content-type', 'application/json')
-                            self.end_headers()
-                            response = {
-                                'status': 'approved',
-                                'session_id': session_id,
-                                'message': 'Connection approved'
-                            }
-                            self.wfile.write(json.dumps(response).encode())
+                            
+                            # Wait for approval with timeout (this is in HTTP handler thread, so it won't block other requests)
+                            approved = server_instance.wait_for_approval(session_id, timeout=60)
+                            
+                            if approved:
+                                self.send_response(200)
+                                self.send_header('Content-type', 'application/json')
+                                self.end_headers()
+                                response = {
+                                    'status': 'approved',
+                                    'session_id': session_id,
+                                    'message': 'Connection approved'
+                                }
+                                self.wfile.write(json.dumps(response).encode())
+                            else:
+                                self.send_response(403)
+                                self.send_header('Content-type', 'application/json')
+                                self.end_headers()
+                                response = {
+                                    'status': 'rejected',
+                                    'message': 'Connection rejected by server or timeout'
+                                }
+                                self.wfile.write(json.dumps(response).encode())
                         else:
-                            self.send_response(403)
+                            self.send_response(401)
                             self.send_header('Content-type', 'application/json')
                             self.end_headers()
                             response = {
-                                'status': 'rejected',
-                                'message': 'Connection rejected by server or timeout'
+                                'status': 'unauthorized',
+                                'message': 'Invalid security code'
                             }
                             self.wfile.write(json.dumps(response).encode())
+                    
                     else:
-                        self.send_response(401)
+                        self.send_response(404)
+                        self.end_headers()
+                        
+                except Exception as e:
+                    print(f"[-] Error handling POST request: {e}")
+                    try:
+                        self.send_response(500)
                         self.send_header('Content-type', 'application/json')
                         self.end_headers()
                         response = {
-                            'status': 'unauthorized',
-                            'message': 'Invalid security code'
+                            'status': 'error',
+                            'message': 'Internal server error'
                         }
                         self.wfile.write(json.dumps(response).encode())
-                
-                else:
-                    self.send_response(404)
-                    self.end_headers()
+                    except:
+                        pass  # If we can't send error response, just continue
         
         return ScreenShareHandler
     
@@ -315,6 +367,11 @@ class ScreenShareWebServer:
         capture_thread = threading.Thread(target=self.capture_screen_loop, daemon=True)
         capture_thread.start()
         
+        # Start approval processor thread
+        self.approval_processor_thread = threading.Thread(target=self.process_approval_queue, daemon=True)
+        self.approval_processor_thread.start()
+        print("[*] Approval processor started - requests will be handled sequentially")
+        
         # Create a threaded HTTP server
         class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
             daemon_threads = True
@@ -336,8 +393,24 @@ class ScreenShareWebServer:
         """Stop the screen sharing server"""
         print("\n[*] Stopping server...")
         self.sharing = False
+        
+        # Stop approval processor thread
+        if self.approval_processor_thread and self.approval_processor_thread.is_alive():
+            self.approval_queue.put(None)  # Poison pill to stop the thread
+            self.approval_processor_thread.join(timeout=2)
+        
         self.authorized_sessions.clear()
         self.active_streams.clear()
+        self.pending_approvals.clear()
+        
+        # Clear the queue
+        while not self.approval_queue.empty():
+            try:
+                self.approval_queue.get_nowait()
+                self.approval_queue.task_done()
+            except queue.Empty:
+                break
+        
         print("[*] Server stopped")
 
 def main():
