@@ -236,7 +236,7 @@
             width: 100%;
             background: #000;
             border-radius: 8px;
-            overflow: hidden;
+            overflow: auto;
             position: relative;
             display: flex;
             justify-content: center;
@@ -244,6 +244,14 @@
             min-height: 400px;
             height: calc(100vh - 140px);
             max-height: calc(100vh - 140px);
+            cursor: zoom-in;
+        }
+
+        .screen-viewer.zoomed {
+            cursor: zoom-out;
+            overflow: auto;
+            align-items: flex-start;
+            justify-content: flex-start;
         }
 
         #screenImage {
@@ -251,6 +259,18 @@
             height: 100%;
             display: block;
             object-fit: contain;
+            transition: transform 0.3s ease;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        .screen-viewer.zoomed #screenImage {
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            object-fit: none;
+            cursor: move;
         }
 
         .loading {
@@ -810,10 +830,13 @@
             screenImage.onload = function() {
                 loadingIndicator.style.display = 'none';
                 screenImage.style.display = 'block';
-                showToast('success', 'Screen Sharing Active', 'You are now viewing the shared screen in real-time!', 4000);
+                showToast('success', 'Screen Sharing Active', 'You are now viewing the shared screen in real-time! Click to zoom.', 4000);
                 
                 // Start connection check
                 startConnectionCheck();
+                
+                // Enable zoom functionality
+                enableZoom();
             };
 
             screenImage.onerror = function() {
@@ -828,6 +851,61 @@
 
             // Set image source - browser will handle MJPEG stream automatically
             screenImage.src = streamUrl;
+        }
+
+        // Zoom functionality
+        function enableZoom() {
+            const screenViewer = document.querySelector('.screen-viewer');
+            let isZoomed = false;
+            let isDragging = false;
+            let startX, startY, scrollLeft, scrollTop;
+
+            screenViewer.addEventListener('click', function(e) {
+                if (isDragging) return;
+                
+                isZoomed = !isZoomed;
+                screenViewer.classList.toggle('zoomed', isZoomed);
+                
+                if (isZoomed) {
+                    showToast('info', 'Zoomed In', 'Drag to pan around. Click again to zoom out.', 3000);
+                } else {
+                    showToast('info', 'Zoomed Out', 'Click to zoom in again.', 2000);
+                }
+            });
+
+            // Pan functionality when zoomed
+            screenImage.addEventListener('mousedown', function(e) {
+                if (!isZoomed) return;
+                isDragging = true;
+                startX = e.pageX - screenViewer.offsetLeft;
+                startY = e.pageY - screenViewer.offsetTop;
+                scrollLeft = screenViewer.scrollLeft;
+                scrollTop = screenViewer.scrollTop;
+                screenImage.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            screenViewer.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - screenViewer.offsetLeft;
+                const y = e.pageY - screenViewer.offsetTop;
+                const walkX = (x - startX) * 2;
+                const walkY = (y - startY) * 2;
+                screenViewer.scrollLeft = scrollLeft - walkX;
+                screenViewer.scrollTop = scrollTop - walkY;
+            });
+
+            screenViewer.addEventListener('mouseup', function() {
+                isDragging = false;
+                if (isZoomed) {
+                    screenImage.style.cursor = 'move';
+                }
+            });
+
+            screenViewer.addEventListener('mouseleave', function() {
+                isDragging = false;
+            });
         }
 
         // Connection health check

@@ -48,22 +48,29 @@ class ScreenShareWebServer:
                 # Convert BGRA to BGR (remove alpha channel)
                 img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
                 
-                # Resize to reduce bandwidth (mobile-friendly)
-                scale_percent = 50  # Smaller for mobile
+                # High-quality capture with minimal downscaling for zoom clarity
+                scale_percent = 100  # Full resolution for maximum detail when zooming
                 width = int(img.shape[1] * scale_percent / 100)
                 height = int(img.shape[0] * scale_percent / 100)
-                img = cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
                 
-                # Encode image to JPEG format
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]  # Lower quality for mobile
+                # Only resize if scaling is needed, use best quality interpolation
+                if scale_percent != 100:
+                    img = cv2.resize(img, (width, height), interpolation=cv2.INTER_LANCZOS4)
+                
+                # Encode image to JPEG format with maximum quality
+                encode_param = [
+                    int(cv2.IMWRITE_JPEG_QUALITY), 95,  # Maximum practical quality
+                    int(cv2.IMWRITE_JPEG_OPTIMIZE), 1,   # Optimize encoding
+                    int(cv2.IMWRITE_JPEG_PROGRESSIVE), 1  # Progressive JPEG for better streaming
+                ]
                 result, encoded_img = cv2.imencode('.jpg', img, encode_param)
                 
                 # Update current frame
                 with self.frame_lock:
                     self.current_frame = encoded_img.tobytes()
                 
-                # Control frame rate (10 FPS for mobile)
-                time.sleep(0.1)
+                # Control frame rate (20 FPS for smooth high-quality experience)
+                time.sleep(0.05)  # 20 FPS
                 
             except Exception as e:
                 print(f"[-] Error capturing screen: {e}")
