@@ -19,19 +19,22 @@ def main_menu():
         print_banner()
         
         print("Choose an option:\n")
-        print("  [1] Share My Screen (Server)")
-        print("  [2] View Someone's Screen (Client)")
-        print("  [3] Exit")
+        print("  [1] Share My Screen (Desktop App)")
+        print("  [2] Share My Screen (Web Browser - Mobile Friendly)")
+        print("  [3] View Someone's Screen (Desktop App)")
+        print("  [4] Exit")
         print()
         print("-" * 60)
         
-        choice = input("\nEnter your choice (1/2/3): ").strip()
+        choice = input("\nEnter your choice (1/2/3/4): ").strip()
         
         if choice == '1':
             return 'server'
         elif choice == '2':
-            return 'client'
+            return 'web_server'
         elif choice == '3':
+            return 'client'
+        elif choice == '4':
             # Confirm before exiting
             print()
             confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
@@ -40,7 +43,7 @@ def main_menu():
                 sys.exit(0)
             # If 'no', loop continues and menu is shown again
         else:
-            print("\n❌ Invalid choice! Please enter 1, 2, or 3.")
+            print("\n❌ Invalid choice! Please enter 1, 2, 3, or 4.")
             input("Press Enter to continue...")
 
 def run_server():
@@ -126,6 +129,34 @@ def run_client():
         print(f"❌ Error: {e}")
         input("\nPress Enter to return to main menu...")
 
+def run_web_server():
+    """Run the web server (browser-based screen sharing)"""
+    clear_screen()
+    print_banner()
+    print("🌐 WEB BROWSER SCREEN SHARE MODE")
+    print("=" * 60)
+    print()
+    
+    try:
+        # Import and run web server
+        from web_server import ScreenShareWebServer
+        
+        server = ScreenShareWebServer()
+        print("[*] This mode is mobile-friendly!")
+        print("[*] You can view the screen from any device with a web browser\n")
+        server.start_sharing()
+        
+    except KeyboardInterrupt:
+        print("\n\n[!] Web server stopped by user")
+        input("\nPress Enter to return to main menu...")
+    except ImportError as e:
+        print(f"❌ Error: Could not import web server module - {e}")
+        print("Make sure web_server.py exists in the same directory.")
+        input("\nPress Enter to return to main menu...")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        input("\nPress Enter to return to main menu...")
+
 def main():
     """Main application entry point"""
     try:
@@ -134,6 +165,8 @@ def main():
             
             if choice == 'server':
                 run_server()
+            elif choice == 'web_server':
+                run_web_server()
             elif choice == 'client':
                 run_client()
                 

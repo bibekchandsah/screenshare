@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Screen Share Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            overflow: hidden;
+            transition: max-width 0.3s ease;
+        }
+
+        .container.login-mode {
+            max-width: 500px;
+        }
+
+        .container.viewer-mode {
+            max-width: 98vw;
+            max-height: 98vh;
+            width: 98vw;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 0;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Header disconnect button (pill style) */
+        .header-disconnect-btn {
+            position: absolute;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-disconnect-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-disconnect-btn:active {
+            transform: translateY(0);
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .container.viewer-mode .content {
+            padding: 10px;
+        }
+
+        .login-section {
+            display: block;
+        }
+
+        .viewer-section {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .code-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            max-width: 65px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .code-digit {
+            width: 55px;
+            height: 65px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            caret-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .code-digit:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: scale(1.05);
+        }
+
+        .code-digit.filled {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            text-transform: uppercase;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .screen-viewer {
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            height: calc(100vh - 140px);
+            max-height: calc(100vh - 140px);
+        }
+
+        #screenImage {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            pointer-events: auto;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid #667eea;
+        }
+
+        .toast.removing {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .toast.info {
+            border-left-color: #3498db;
+        }
+
+        .toast.success {
+            border-left-color: #2ecc71;
+        }
+
+        .toast.warning {
+            border-left-color: #f39c12;
+        }
+
+        .toast.error {
+            border-left-color: #e74c3c;
+        }
+
+        .toast.loading {
+            border-left-color: #667eea;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0 0 0 12px;
+            animation: progressBar 5s linear forwards;
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        .controls {
+            display: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        /* Hide status indicator - using toast notifications instead */
+        .status {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: row;
+            }
+
+            .controls .btn {
+                min-width: 120px;
+                font-size: 14px;
+            }
+
+            .header-disconnect-btn {
+                position: static;
+                margin-top: 15px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .header {
+                flex-direction: column;
+            }
+
+            .code-digit {
+                width: 45px;
+                height: 55px;
+                font-size: 22px;
+            }
+
+            .code-input-container {
+                gap: 6px;
+                max-width: 45px;
+            }
+
+            .container.viewer-mode {
+                max-width: 100vw;
+                max-height: 100vh;
+            }
+
+            .screen-viewer {
+                height: calc(100vh - 160px);
+                max-height: calc(100vh - 160px);
+                min-height: 300px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .code-digit {
+                width: 40px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .code-input-container {
+                gap: 4px;
+            }
+
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="container login-mode" id="mainContainer">
+        <div class="header" id="headerElement">
+            <div>
+                <h1>🖥️ Screen Share Viewer</h1>
+                <p id="headerDescription">Enter the security code to view the shared screen</p>
+            </div>
+            <button class="header-disconnect-btn" id="headerDisconnectBtn" style="display: none;">
+                <span>●</span> Disconnect
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- Login Section -->
+            <div class="login-section" id="loginSection">
+                <div class="message" id="loginMessage"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="digit1">Security Code</label>
+                        <div class="code-input-container">
+                            <input type="text" class="code-digit" id="digit1" maxlength="1" autocomplete="off" data-index="0">
+                            <input type="text" class="code-digit" id="digit2" maxlength="1" autocomplete="off" data-index="1">
+                            <input type="text" class="code-digit" id="digit3" maxlength="1" autocomplete="off" data-index="2">
+                            <input type="text" class="code-digit" id="digit4" maxlength="1" autocomplete="off" data-index="3">
+                            <input type="text" class="code-digit" id="digit5" maxlength="1" autocomplete="off" data-index="4">
+                            <input type="text" class="code-digit" id="digit6" maxlength="1" autocomplete="off" data-index="5">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" id="connectBtn">
+                        Connect to Screen Share
+                    </button>
+                </form>
+            </div>
+
+            <!-- Viewer Section -->
+            <div class="viewer-section" id="viewerSection">
+                <div class="message" id="viewerMessage"></div>
+                
+                <div class="screen-viewer">
+                    <img id="screenImage" alt="Shared Screen" style="display: none;">
+                    <div class="loading" id="loadingIndicator">
+                        <div class="spinner"></div>
+                        <p>Connecting to screen share...</p>
+                    </div>
+                </div>
+
+                <div class="status connected" id="connectionStatus">
+                    🟢 Connected - Viewing Screen
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-danger" id="disconnectBtn">
+                        Disconnect
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let isConnected = false;
+        let connectionCheckInterval = null;
+
+        const mainContainer = document.getElementById('mainContainer');
+        const loginSection = document.getElementById('loginSection');
+        const viewerSection = document.getElementById('viewerSection');
+        const loginForm = document.getElementById('loginForm');
+        const digitInputs = document.querySelectorAll('.code-digit');
+        const connectBtn = document.getElementById('connectBtn');
+        const loginMessage = document.getElementById('loginMessage');
+        const viewerMessage = document.getElementById('viewerMessage');
+        const screenImage = document.getElementById('screenImage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const headerDisconnectBtn = document.getElementById('headerDisconnectBtn');
+        const headerDescription = document.getElementById('headerDescription');
+        const toastContainer = document.getElementById('toastContainer');
+
+        // Toast Notification System
+        function showToast(type, title, message, duration = 5000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                warning: '⚠️',
+                error: '❌',
+                loading: '⏳'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+                ${duration > 0 ? '<div class="toast-progress"></div>' : ''}
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+            
+            return toast;
+        }
+
+        // Initialize digit inputs
+        function initializeDigitInputs() {
+            digitInputs.forEach((input, index) => {
+                // Handle input
+                input.addEventListener('input', (e) => {
+                    const value = e.target.value.toUpperCase();
+                    
+                    if (value) {
+                        e.target.value = value;
+                        e.target.classList.add('filled');
+                        
+                        // Auto-focus next input
+                        if (index < digitInputs.length - 1) {
+                            digitInputs[index + 1].focus();
+                        }
+                    } else {
+                        e.target.classList.remove('filled');
+                    }
+                });
+
+                // Handle keydown for backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        digitInputs[index - 1].focus();
+                        digitInputs[index - 1].value = '';
+                        digitInputs[index - 1].classList.remove('filled');
+                    }
+                });
+
+                // Handle paste
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pastedData = e.clipboardData.getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    
+                    if (pastedData.length === 6) {
+                        digitInputs.forEach((input, idx) => {
+                            input.value = pastedData[idx] || '';
+                            if (input.value) {
+                                input.classList.add('filled');
+                            }
+                        });
+                        digitInputs[5].focus();
+                    }
+                });
+
+                // Handle focus - select all text
+                input.addEventListener('focus', (e) => {
+                    setTimeout(() => e.target.select(), 0);
+                });
+            });
+
+            // Focus first input on load
+            digitInputs[0].focus();
+        }
+
+        // Get security code from digit inputs
+        function getSecurityCode() {
+            return Array.from(digitInputs).map(input => input.value).join('');
+        }
+
+        // Clear security code inputs
+        function clearSecurityCode() {
+            digitInputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('filled');
+            });
+            digitInputs[0].focus();
+        }
+
+        // Initialize
+        initializeDigitInputs();
+
+        // Show message
+        function showMessage(element, type, text) {
+            element.className = `message ${type}`;
+            element.textContent = text;
+            element.style.display = 'block';
+            
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Hide message
+        function hideMessage(element) {
+            element.style.display = 'none';
+        }
+
+        // Connect to server
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const code = getSecurityCode().trim();
+            
+            if (code.length !== 6) {
+                showMessage(loginMessage, 'error', 'Please enter all 6 digits of the security code');
+                showToast('error', 'Invalid Code', 'Please enter all 6 digits of the security code');
+                return;
+            }
+
+            connectBtn.disabled = true;
+            connectBtn.textContent = 'Connecting...';
+            hideMessage(loginMessage);
+            
+            // Show waiting for approval toast
+            showToast('loading', 'Connecting...', 'Waiting for server approval. Please wait...', 0);
+
+            try {
+                const response = await fetch('/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code: code })
+                });
+
+                const data = await response.json();
+
+                // Remove all loading toasts
+                document.querySelectorAll('.toast.loading').forEach(toast => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                });
+
+                if (response.ok && data.status === 'approved') {
+                    sessionId = data.session_id;
+                    showMessage(loginMessage, 'success', 'Connected successfully! Loading screen...');
+                    showToast('success', 'Connection Approved! 🎉', 'Server has approved your connection. Loading screen...');
+                    
+                    setTimeout(() => {
+                        startViewing();
+                    }, 1000);
+                } else if (data.status === 'rejected') {
+                    showMessage(loginMessage, 'error', 'Connection rejected by server. Try again later.');
+                    showToast('error', 'Connection Rejected', 'The server has denied your connection request. Please try again later.');
+                    connectBtn.disabled = false;
+                    connectBtn.textContent = 'Connect to Screen Share';
+                } else if (data.status === 'unauthorized') {
+                    showMessage(loginMessage, 'error', 'Invalid security code. Please try again.');
+                    showToast('error', 'Invalid Code', 'The security code you entered is incorrect. Please check and try again.');
+                    connectBtn.disabled = false;
+                    connectBtn.textContent = 'Connect to Screen Share';
+                    clearSecurityCode();
+                } else {
+                    showMessage(loginMessage, 'error', data.message || 'Connection failed');
+                    showToast('error', 'Connection Failed', data.message || 'Unable to connect to the server. Please try again.');
+                    connectBtn.disabled = false;
+                    connectBtn.textContent = 'Connect to Screen Share';
+                }
+            } catch (error) {
+                // Remove loading toasts
+                document.querySelectorAll('.toast.loading').forEach(toast => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                });
+                
+                showMessage(loginMessage, 'error', 'Network error. Please check your connection.');
+                showToast('error', 'Network Error', 'Unable to reach the server. Please check your internet connection.');
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect to Screen Share';
+            }
+        });
+
+        // Start viewing screen
+        function startViewing() {
+            // Switch to viewer mode
+            mainContainer.classList.remove('login-mode');
+            mainContainer.classList.add('viewer-mode');
+            
+            loginSection.style.display = 'none';
+            viewerSection.style.display = 'block';
+            isConnected = true;
+
+            // Update header - hide description, show disconnect button
+            headerDescription.style.display = 'none';
+            headerDisconnectBtn.style.display = 'flex';
+
+            showToast('info', 'Loading Stream...', 'Initializing screen share connection...', 3000);
+
+            // Build stream URL with session ID as query parameter
+            const streamUrl = `/stream?session=${sessionId}&_=${Date.now()}`;
+            
+            screenImage.onload = function() {
+                loadingIndicator.style.display = 'none';
+                screenImage.style.display = 'block';
+                showToast('success', 'Screen Sharing Active', 'You are now viewing the shared screen in real-time!', 4000);
+                
+                // Start connection check
+                startConnectionCheck();
+            };
+
+            screenImage.onerror = function() {
+                showMessage(viewerMessage, 'error', 'Connection lost. Please refresh the page.');
+                isConnected = false;
+                loadingIndicator.style.display = 'none';
+                showToast('error', 'Connection Lost', 'The screen sharing connection has been interrupted. Please reconnect.', 0);
+                
+                // Stop connection check
+                stopConnectionCheck();
+            };
+
+            // Set image source - browser will handle MJPEG stream automatically
+            screenImage.src = streamUrl;
+        }
+
+        // Connection health check
+        function startConnectionCheck() {
+            // Clear any existing interval
+            stopConnectionCheck();
+            
+            // Check connection every 3 seconds
+            connectionCheckInterval = setInterval(async () => {
+                if (!isConnected || !sessionId) {
+                    stopConnectionCheck();
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/health', {
+                        method: 'GET',
+                        cache: 'no-cache'
+                    });
+                    
+                    if (!response.ok) {
+                        // Server is down
+                        handleServerDisconnect();
+                    } else {
+                        const data = await response.json();
+                        if (!data.sharing) {
+                            // Server stopped sharing
+                            handleServerDisconnect();
+                        }
+                    }
+                } catch (error) {
+                    // Network error or server unreachable
+                    handleServerDisconnect();
+                }
+            }, 3000);
+        }
+
+        function stopConnectionCheck() {
+            if (connectionCheckInterval) {
+                clearInterval(connectionCheckInterval);
+                connectionCheckInterval = null;
+            }
+        }
+
+        function handleServerDisconnect() {
+            if (!isConnected) return; // Already handled
+            
+            stopConnectionCheck();
+            
+            showMessage(viewerMessage, 'error', 'Server disconnected. Please refresh the page.');
+            isConnected = false;
+            
+            screenImage.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            loadingIndicator.querySelector('p').textContent = 'Server disconnected';
+            
+            showToast('error', 'Server Disconnected', 'The server has been closed. You have been disconnected.', 0);
+        }
+
+        // Disconnect - handle both buttons
+        disconnectBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to disconnect?')) {
+                showToast('info', 'Disconnecting...', 'Closing screen share connection...', 3000);
+                disconnect();
+            }
+        });
+
+        headerDisconnectBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to disconnect?')) {
+                showToast('info', 'Disconnecting...', 'Closing screen share connection...', 3000);
+                disconnect();
+            }
+        });
+
+        function disconnect() {
+            isConnected = false;
+            sessionId = null;
+            
+            // Stop connection check
+            stopConnectionCheck();
+            
+            // Switch back to login mode
+            mainContainer.classList.remove('viewer-mode');
+            mainContainer.classList.add('login-mode');
+            
+            viewerSection.style.display = 'none';
+            loginSection.style.display = 'block';
+
+            // Reset header
+            headerDescription.style.display = 'block';
+            headerDisconnectBtn.style.display = 'none';
+            
+            screenImage.src = '';
+            screenImage.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            
+            clearSecurityCode();
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect to Screen Share';
+            
+            hideMessage(loginMessage);
+            hideMessage(viewerMessage);
+            
+            showToast('success', 'Disconnected', 'You have been disconnected from the screen share.', 3000);
+        }
+    </script>
+</body>
+</html>

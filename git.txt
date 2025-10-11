@@ -16,3 +16,23 @@ git push -u origin main
 1) secure login with one or multiple user with security code
 2) server confirmation before client access
 3) confirmation before closing screen preview
+4) in same wifi user can share screen in mobile devices too
+5) check the server connection and disconnection so that user can see when it's dissconnected or connected
+6) user from anywhere can see the shared screen
+7) user should be able to see the cursor too
+
+
+
+Do you want to allow this connection? (y/n):
+Exception in thread Thread-5 (get_approval):
+Traceback (most recent call last):
+  File "C:\Users\bibek\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Users\bibek\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Programming\program exercise\Python\screen share\web_server.py", line 225, in get_approval
+    server_instance.request_approval(
+  File "D:\Programming\program exercise\Python\screen share\web_server.py", line 103, in request_approval
+    self.pending_approvals[session_id]['approved'] = False
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'WSBv3afTcaPkd7mM'
