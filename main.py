@@ -32,8 +32,13 @@ def main_menu():
         elif choice == '2':
             return 'client'
         elif choice == '3':
-            print("\nGoodbye! 👋")
-            sys.exit(0)
+            # Confirm before exiting
+            print()
+            confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
+            if confirm in ['y', 'yes']:
+                print("\nGoodbye! 👋")
+                sys.exit(0)
+            # If 'no', loop continues and menu is shown again
         else:
             print("\n❌ Invalid choice! Please enter 1, 2, or 3.")
             input("Press Enter to continue...")
@@ -51,18 +56,21 @@ def run_server():
         from server import ScreenShareServer
         
         server = ScreenShareServer()
+        print("[*] Press Ctrl+C to stop sharing\n")
         server.start_sharing()
         
     except KeyboardInterrupt:
         print("\n\n[!] Sharing stopped by user")
+        # Confirm before returning to menu
+        print()
+        input("Press Enter to return to main menu...")
     except ImportError as e:
         print(f"❌ Error: Could not import server module - {e}")
         print("Make sure server.py exists in the same directory.")
+        input("\nPress Enter to continue...")
     except Exception as e:
         print(f"❌ Error: {e}")
-    finally:
-        print("\nReturning to main menu...")
-        input("Press Enter to continue...")
+        input("\nPress Enter to continue...")
 
 def run_client():
     """Run the client (view screen) module"""
@@ -101,19 +109,22 @@ def run_client():
             client.receive_frames()
         else:
             print("❌ Failed to connect to server")
+        
+        input("\nPress Enter to return to main menu...")
             
     except KeyboardInterrupt:
         print("\n\n[!] Viewing stopped by user")
+        input("\nPress Enter to return to main menu...")
     except ValueError:
         print("❌ Error: Invalid port number")
+        input("\nPress Enter to return to main menu...")
     except ImportError as e:
         print(f"❌ Error: Could not import client module - {e}")
         print("Make sure client.py exists in the same directory.")
+        input("\nPress Enter to return to main menu...")
     except Exception as e:
         print(f"❌ Error: {e}")
-    finally:
-        print("\nReturning to main menu...")
-        input("Press Enter to continue...")
+        input("\nPress Enter to return to main menu...")
 
 def main():
     """Main application entry point"""

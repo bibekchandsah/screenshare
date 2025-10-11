@@ -74,11 +74,18 @@ class ScreenShareServer:
                         
                         client_socket.sendall(message_size + data)
                         
-                    except (ConnectionResetError, BrokenPipeError):
-                        print(f"[-] Client {address} disconnected")
+                    except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError) as e:
+                        print(f"[*] Client {address} disconnected gracefully")
+                        break
+                    except OSError as e:
+                        # Windows error 10053 and similar connection aborts
+                        if e.winerror == 10053 or 'connection' in str(e).lower():
+                            print(f"[*] Client {address} closed the connection")
+                        else:
+                            print(f"[-] Network error with {address}: {e}")
                         break
                     except Exception as e:
-                        print(f"[-] Error sending to {address}: {e}")
+                        print(f"[-] Unexpected error sending to {address}: {e}")
                         break
             else:
                 client_socket.send(b"UNAUTHORIZED\n")

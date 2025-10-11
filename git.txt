@@ -9,3 +9,10 @@ git push -u origin main
 git remote add origin https://github.com/bibekchandsah/screenshare.git
 git branch -M main
 git push -u origin main
+
+
+
+
+1) secure login with one or multiple user with security code
+2) server confirmation before client access
+3) confirmation before closing screen preview
