@@ -13,6 +13,14 @@ import time
 import os
 import queue
 
+# Import for cursor capture (cross-platform)
+try:
+    import pyautogui
+    CURSOR_AVAILABLE = True
+except ImportError:
+    CURSOR_AVAILABLE = False
+    print("[!] Warning: pyautogui not installed. Cursor won't be visible. Install with: pip install pyautogui")
+
 class ScreenShareWebServer:
     def __init__(self, host='0.0.0.0', port=8080):
         self.host = host
@@ -49,6 +57,31 @@ class ScreenShareWebServer:
                 
                 # Convert BGRA to BGR (remove alpha channel)
                 img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+                
+                # Draw cursor on the image
+                if CURSOR_AVAILABLE:
+                    try:
+                        # Get cursor position
+                        cursor_x, cursor_y = pyautogui.position()
+                        
+                        # Adjust cursor position relative to monitor
+                        cursor_x -= monitor['left']
+                        cursor_y -= monitor['top']
+                        
+                        # Draw cursor (simple circle with outline for visibility)
+                        cursor_size = 12
+                        cursor_thickness = 2
+                        
+                        # Draw outer circle (white outline for visibility on any background)
+                        cv2.circle(img, (cursor_x, cursor_y), cursor_size, (255, 255, 255), cursor_thickness + 2)
+                        # Draw inner circle (black for contrast)
+                        cv2.circle(img, (cursor_x, cursor_y), cursor_size, (0, 0, 0), cursor_thickness)
+                        # Draw center dot (red for visibility)
+                        cv2.circle(img, (cursor_x, cursor_y), 3, (0, 0, 255), -1)
+                        
+                    except Exception as cursor_error:
+                        # Cursor drawing failed, continue without cursor
+                        pass
                 
                 # High-quality capture with minimal downscaling for zoom clarity
                 scale_percent = 100  # Full resolution for maximum detail when zooming

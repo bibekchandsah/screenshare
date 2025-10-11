@@ -21,18 +21,3 @@ git push -u origin main
 6) user should be able to see the cursor too
 7) user from anywhere can see the shared screen
 
-
-
-Do you want to allow this connection? (y/n):
-Exception in thread Thread-5 (get_approval):
-Traceback (most recent call last):
-  File "C:\Users\bibek\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
-    self.run()
-  File "C:\Users\bibek\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1010, in run
-    self._target(*self._args, **self._kwargs)
-  File "D:\Programming\program exercise\Python\screen share\web_server.py", line 225, in get_approval
-    server_instance.request_approval(
-  File "D:\Programming\program exercise\Python\screen share\web_server.py", line 103, in request_approval
-    self.pending_approvals[session_id]['approved'] = False
-    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
-KeyError: 'WSBv3afTcaPkd7mM'
