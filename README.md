@@ -8,9 +8,11 @@ A Python-based screen sharing application with security code authentication and 
 - 🔒 **Secure Connection**: Random security code generation + manual approval system
 - 📺 **Real-time Streaming**: Live screen capture and streaming at high quality
 - 🚀 **Easy to Use**: Simple menu-driven interface
-- 🔌 **Network Support**: Works over LAN or localhost
+- 🔌 **Network Support**: Works over LAN, localhost, and **internet** (with ngrok)
+- 🌐 **Remote Access**: Share screen across different networks/locations
 - 👥 **Multiple Viewers**: Support for unlimited simultaneous viewers
 - 🎯 **Unified Launcher**: Single entry point with menu options
+- 🖱️ **Cursor Visibility**: See the presenter's mouse cursor in real-time
 
 ### Advanced Web Features (NEW! ✨)
 - 📱 **Mobile Friendly**: Responsive design works on phones, tablets, and desktops
@@ -278,6 +280,65 @@ If your phone can't connect, you may need to allow the port through Windows Fire
 
 ---
 
+## 🌐 Sharing Across Different Networks (Internet Access)
+
+### Problem: Same WiFi Limitation
+By default, screen sharing only works when both users are on the **same WiFi/local network**. But what if you want to share with someone in a different location?
+
+### Solution: Remote Access Options
+
+#### **Option 1: ngrok (Easiest, Recommended) ⭐**
+
+**Quick Setup:**
+
+1. **Install ngrok helper:**
+   ```bash
+   pip install pyngrok
+   ```
+2. **Run the helper:**
+   ```bash
+   python ngrok_helper.py
+   # Choose option 5 for Setup ngrok Authtoken 
+   Follow instruction for setting up authtoken
+   ```
+3. **use standalone ngrok:**
+   ```bash
+   # Start your screen share first
+   python main.py
+   
+   # choose option [2] Share My Screen (Web Browser - Mobile Friendly)
+   # you will see the 
+   ```
+```
+============================================================
+SECURITY CODE: 9TV0KX
+============================================================
+Share this code with people who want to view your screen
+Multiple viewers can connect simultaneously!
+============================================================
+
+[*] Access the screen share from your browser at:
+    http://10.5.234.63:8080 <------ screehshare_url
+    http://localhost:8080
+```
+   ```
+   # Then in another terminal:
+   ngrok http http://YOUR_PC_IP:8080 or screenshare_url
+   ```
+
+4. **Share the public URL:**
+   - ngrok gives you: `https://abc123.ngrok.io`
+   - Share this URL + security code with anyone, anywhere!
+
+**Benefits:**
+- ✅ Works from anywhere in the world
+- ✅ No router configuration needed
+- ✅ Secure HTTPS tunnel
+- ✅ Free tier available
+- ✅ Setup in 2 minutes
+
+---
+
 ### Alternative Usage (Advanced)
 
 You can also run the server and client directly if you prefer:
@@ -432,6 +493,86 @@ You can customize the following settings by editing the source code:
 - Server continues running even if connections timeout
 - All resources are properly cleaned up
 
+---
+
+## 🆘 Troubleshooting Remote Access
+
+### ngrok Issues:
+
+**Problem: "Warning page" or "License agreement" shown instead of app**
+- **Solution:** This is ngrok's anti-phishing warning (normal for free tier)
+- Click **"Visit Site"** button to continue
+- Tell viewers to click through the warning
+- To skip: Upgrade to ngrok paid plan ($10/month)
+
+**Problem: "Tunnel not found"**
+- Solution: Check if ngrok is running
+- Verify port number matches
+
+**Problem: "Too many connections" (Free tier)**
+- Solution: Upgrade to paid plan or wait
+
+**Problem: Slow performance**
+- Solution: ngrok free servers may be far away
+- Try different region: `ngrok http 8080 --region eu`
+
+**Problem: Page shows "Oracle Database" or random content**
+- **Cause:** You're seeing ngrok's interstitial warning page
+- **Solution:** Scroll down and click "Visit Site" button
+- This is NOT your application - it's ngrok's security check
+- The warning page HTML sometimes shows random cached content
+
+### Port Forwarding Issues:
+
+**Problem: Cannot connect from outside**
+- Check router port forwarding rules
+- Verify Windows Firewall allows port
+- Test if ISP blocks port (some block 80, 8080)
+- Try different port (e.g., 8081, 9000)
+
+**Problem: IP address changes**
+- Setup Dynamic DNS service
+- Check ISP if they provide static IP
+
+### General Issues:
+
+**Problem: Connection very slow**
+- Reduce image quality in settings
+- Check internet upload speed
+- Consider local server closer to viewers
+
+**Problem: Connection drops frequently**
+- Check internet stability
+- Increase timeout values
+- Use wired connection instead of WiFi
+
+---
+
+## 📊 Performance Tips for Remote Access
+
+### Optimize for Internet Streaming:
+
+1. **Reduce Resolution** (in `web_server.py`):
+   ```python
+   scale_percent = 75  # Instead of 100
+   ```
+
+2. **Lower Quality** (for slower connections):
+   ```python
+   int(cv2.IMWRITE_JPEG_QUALITY), 80  # Instead of 95
+   ```
+
+3. **Reduce Frame Rate**:
+   ```python
+   time.sleep(0.1)  # 10 FPS instead of 20
+   ```
+
+4. **Monitor Bandwidth**:
+   - Check your upload speed: [speedtest.net](https://speedtest.net)
+   - Required: ~2-5 Mbps upload for good quality
+
+---
+
 ## Security Notes
 
 ⚠️ **Important:**
@@ -525,7 +666,21 @@ screen share/
 
 ## Recent Updates & Improvements
 
-### Version 2.0 (Latest)
+### Version 2.1 (Latest) 🆕
+✨ **New Remote Access Features:**
+- 🌐 **Internet Sharing**: Share screen across different networks/locations
+- 🚀 **ngrok Integration**: Easy tunneling with `ngrok_helper.py`
+- 📖 **Remote Access Guide**: Comprehensive guide for all remote access methods
+- 🔌 **Port Forwarding Documentation**: Step-by-step router configuration
+- 🛡️ **VPN Setup Guide**: ZeroTier/Tailscale integration instructions
+
+🖱️ **Cursor Visibility:**
+- 👆 **Real-time Cursor**: Viewers can now see your mouse cursor
+- 🎨 **Smart Design**: Triple-layer cursor (white outline, black ring, red center)
+- 📍 **Precise Tracking**: Cursor position updates at stream frame rate
+- ✅ **Cross-Platform**: Works on Windows, macOS, and Linux via pyautogui
+
+### Version 2.0
 ✨ **Major Feature Additions:**
 - 🔍 **Intelligent Zoom**: Click anywhere to zoom into that exact section
 - 🎬 **Advanced Fullscreen**: Draggable F button with keyboard shortcuts
@@ -554,6 +709,12 @@ screen share/
 - ✅ Fixed: Server crashes on timeout (exception handling)
 - ✅ Fixed: Single-click fullscreen toggle (changed to double-click)
 - ✅ Fixed: Zoom centers on click position (not image center)
+- ✅ Fixed: **ngrok warning page** - automatically bypassed with header
+
+🌐 **ngrok Integration:**
+- 🎯 **Auto-Bypass Warning**: Sends `ngrok-skip-browser-warning` header automatically
+- 📱 **Direct Access**: Viewers skip the "Visit Site" button completely
+- 🚀 **Better UX**: One less step for viewers to access screen share
 
 ## Technical Architecture
 

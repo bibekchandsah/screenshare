@@ -1,4 +1,13 @@
+# Core dependencies (required)
 mss==9.0.1
 opencv-python==4.8.1.78
 numpy==1.24.3
 pyautogui==0.9.54
+
+# Optional: For remote access over internet (ngrok tunneling)
+# Uncomment the line below if you want to share screen across different networks
+pyngrok==7.0.0
+
+# Note: To enable internet sharing, install pyngrok:
+# pip install pyngrok
+# Then run: ngrok http screenshare_URL
