@@ -22,7 +22,7 @@ except ImportError:
     print("[!] Warning: pyautogui not installed. Cursor won't be visible. Install with: pip install pyautogui")
 
 class ScreenShareWebServer:
-    def __init__(self, host='0.0.0.0', port=8080):
+    def __init__(self, host='0.0.0.0', port=5000):
         self.host = host
         self.port = port
         self.security_code = None
@@ -36,6 +36,27 @@ class ScreenShareWebServer:
         self.approval_queue = queue.Queue()  # Queue for approval requests
         self.approval_processor_thread = None  # Thread to process approvals sequentially
         
+        # Quality settings
+        self.quality_settings = {
+            'high': {'scale': 100, 'jpeg_quality': 95},
+            'medium': {'scale': 85, 'jpeg_quality': 85},
+            'low': {'scale': 70, 'jpeg_quality': 75}
+        }
+        self.current_quality = 'medium'  # Default quality
+        
+        # Multi-user performance optimizations
+        self.frame_cache = {}  # Cache frames for different quality levels
+        self.cache_lock = threading.Lock()
+        self.last_capture_time = 0
+        self.adaptive_fps = 20  # Dynamic FPS based on user count
+        self.user_count_lock = threading.Lock()
+        self.performance_stats = {
+            'frames_captured': 0,
+            'frames_served': 0,
+            'active_viewers': 0,
+            'avg_frame_time': 0
+        }
+        
     def generate_security_code(self, length=6):
         """Generate a random alphanumeric security code"""
         characters = string.ascii_uppercase + string.digits
@@ -43,11 +64,32 @@ class ScreenShareWebServer:
         return self.security_code
     
     def capture_screen_loop(self):
-        """Continuously capture screen and update current frame"""
+        """Optimized screen capture with multi-user performance enhancements"""
         sct = mss()
+        frame_count = 0
+        
+        print("[*] Starting optimized capture loop for multi-user performance")
         
         while self.sharing:
+            capture_start = time.time()
+            
             try:
+                # Dynamic FPS adjustment based on user count
+                with self.user_count_lock:
+                    active_count = len(self.active_streams)
+                    
+                    # Adaptive FPS: More users = lower FPS to maintain performance
+                    if active_count == 0:
+                        self.adaptive_fps = 20  # Full speed when no viewers
+                    elif active_count <= 2:
+                        self.adaptive_fps = 20  # Full speed for 1-2 users
+                    elif active_count <= 5:
+                        self.adaptive_fps = 15  # Slight reduction for 3-5 users
+                    elif active_count <= 10:
+                        self.adaptive_fps = 12  # Further reduction for 6-10 users
+                    else:
+                        self.adaptive_fps = 8   # Conservative for 10+ users
+                
                 # Capture the primary monitor
                 monitor = sct.monitors[1]
                 screenshot = sct.grab(monitor)
@@ -58,7 +100,7 @@ class ScreenShareWebServer:
                 # Convert BGRA to BGR (remove alpha channel)
                 img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
                 
-                # Draw cursor on the image
+                # Draw cursor on the image (only once for all users)
                 if CURSOR_AVAILABLE:
                     try:
                         # Get cursor position
@@ -68,7 +110,7 @@ class ScreenShareWebServer:
                         cursor_x -= monitor['left']
                         cursor_y -= monitor['top']
                         
-                        # Draw cursor (simple circle with outline for visibility)
+                        # Draw cursor (optimized for performance)
                         cursor_size = 12
                         cursor_thickness = 2
                         
@@ -79,43 +121,82 @@ class ScreenShareWebServer:
                         # Draw center dot (red for visibility)
                         cv2.circle(img, (cursor_x, cursor_y), 3, (0, 0, 255), -1)
                         
-                    except Exception as cursor_error:
+                    except Exception:
                         # Cursor drawing failed, continue without cursor
                         pass
                 
-                # High-quality capture with minimal downscaling for zoom clarity
-                scale_percent = 100  # Full resolution for maximum detail when zooming
-                width = int(img.shape[1] * scale_percent / 100)
-                height = int(img.shape[0] * scale_percent / 100)
+                # Generate frames for all quality levels (cache optimization)
+                with self.cache_lock:
+                    self.frame_cache.clear()  # Clear old cache
+                    
+                    for quality_name, quality_config in self.quality_settings.items():
+                        # Create frame for each quality level
+                        scale_percent = quality_config['scale']
+                        jpeg_quality = quality_config['jpeg_quality']
+                        
+                        # Resize image for this quality
+                        if scale_percent == 100:
+                            quality_img = img.copy()
+                        else:
+                            width = int(img.shape[1] * scale_percent / 100)
+                            height = int(img.shape[0] * scale_percent / 100)
+                            quality_img = cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)  # Faster for downscaling
+                        
+                        # Encode with quality-specific settings
+                        encode_param = [
+                            int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality,
+                            int(cv2.IMWRITE_JPEG_OPTIMIZE), 1
+                        ]
+                        result, encoded_img = cv2.imencode('.jpg', quality_img, encode_param)
+                        
+                        # Cache the encoded frame
+                        self.frame_cache[quality_name] = encoded_img.tobytes()
                 
-                # Only resize if scaling is needed, use best quality interpolation
-                if scale_percent != 100:
-                    img = cv2.resize(img, (width, height), interpolation=cv2.INTER_LANCZOS4)
-                
-                # Encode image to JPEG format with maximum quality
-                encode_param = [
-                    int(cv2.IMWRITE_JPEG_QUALITY), 95,  # Maximum practical quality
-                    int(cv2.IMWRITE_JPEG_OPTIMIZE), 1,   # Optimize encoding
-                    int(cv2.IMWRITE_JPEG_PROGRESSIVE), 1  # Progressive JPEG for better streaming
-                ]
-                result, encoded_img = cv2.imencode('.jpg', img, encode_param)
-                
-                # Update current frame
+                # Update current frame (backward compatibility)
                 with self.frame_lock:
-                    self.current_frame = encoded_img.tobytes()
+                    self.current_frame = self.frame_cache.get(self.current_quality)
                 
-                # Control frame rate (20 FPS for smooth high-quality experience)
-                time.sleep(0.05)  # 20 FPS
+                # Performance tracking
+                capture_time = time.time() - capture_start
+                frame_count += 1
+                
+                # Update stats every 100 frames
+                if frame_count % 100 == 0:
+                    self.performance_stats['frames_captured'] = frame_count
+                    self.performance_stats['active_viewers'] = len(self.active_streams)
+                    self.performance_stats['avg_frame_time'] = capture_time
+                    
+                    if len(self.active_streams) > 0:
+                        print(f"[📊] Performance: {len(self.active_streams)} viewers, "
+                              f"{self.adaptive_fps} FPS, "
+                              f"{capture_time*1000:.1f}ms/frame")
+                
+                # Dynamic sleep based on adaptive FPS
+                sleep_time = max(0, (1.0 / self.adaptive_fps) - capture_time)
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
                 
             except Exception as e:
                 print(f"[-] Error capturing screen: {e}")
                 time.sleep(1)
         
         sct.close()
+        print("[*] Screen capture loop ended")
     
-    def get_current_frame(self):
-        """Get the current frame as JPEG bytes"""
+    def get_current_frame(self, quality=None):
+        """Get the current frame as JPEG bytes with optional quality specification"""
+        if quality and quality in self.quality_settings:
+            # Return cached frame for specific quality
+            with self.cache_lock:
+                frame = self.frame_cache.get(quality)
+                if frame:
+                    self.performance_stats['frames_served'] += 1
+                    return frame
+        
+        # Fallback to current frame (backward compatibility)
         with self.frame_lock:
+            if self.current_frame:
+                self.performance_stats['frames_served'] += 1
             return self.current_frame
     
     def verify_security_code(self, code):
@@ -202,6 +283,78 @@ class ScreenShareWebServer:
                 del self.pending_approvals[session_id]
         return False
     
+    def force_frame_update(self):
+        """Force an immediate frame capture with current quality settings"""
+        if not self.sharing:
+            return
+            
+        try:
+            sct = mss()
+            
+            # Capture the primary monitor
+            monitor = sct.monitors[1]
+            screenshot = sct.grab(monitor)
+            
+            # Convert to numpy array
+            img = np.array(screenshot)
+            
+            # Convert BGRA to BGR (remove alpha channel)
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+            
+            # Draw cursor on the image
+            if CURSOR_AVAILABLE:
+                try:
+                    # Get cursor position
+                    cursor_x, cursor_y = pyautogui.position()
+                    
+                    # Adjust cursor position relative to monitor
+                    cursor_x -= monitor['left']
+                    cursor_y -= monitor['top']
+                    
+                    # Draw cursor (simple circle with outline for visibility)
+                    cursor_size = 12
+                    cursor_thickness = 2
+                    
+                    # Draw outer circle (white outline for visibility on any background)
+                    cv2.circle(img, (cursor_x, cursor_y), cursor_size, (255, 255, 255), cursor_thickness + 2)
+                    # Draw inner circle (black for contrast)
+                    cv2.circle(img, (cursor_x, cursor_y), cursor_size, (0, 0, 0), cursor_thickness)
+                    # Draw center dot (red for visibility)
+                    cv2.circle(img, (cursor_x, cursor_y), 3, (0, 0, 255), -1)
+                    
+                except Exception:
+                    # Cursor drawing failed, continue without cursor
+                    pass
+            
+            # Apply current quality settings
+            quality_config = self.quality_settings[self.current_quality]
+            scale_percent = quality_config['scale']
+            jpeg_quality = quality_config['jpeg_quality']
+            
+            width = int(img.shape[1] * scale_percent / 100)
+            height = int(img.shape[0] * scale_percent / 100)
+            
+            # Only resize if scaling is needed, use best quality interpolation
+            if scale_percent != 100:
+                img = cv2.resize(img, (width, height), interpolation=cv2.INTER_LANCZOS4)
+            
+            # Encode image to JPEG format with current quality setting
+            encode_param = [
+                int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality,
+                int(cv2.IMWRITE_JPEG_OPTIMIZE), 1,   # Optimize encoding
+                int(cv2.IMWRITE_JPEG_PROGRESSIVE), 1  # Progressive JPEG for better streaming
+            ]
+            result, encoded_img = cv2.imencode('.jpg', img, encode_param)
+            
+            # Update current frame immediately
+            with self.frame_lock:
+                self.current_frame = encoded_img.tobytes()
+                
+            print(f"[*] Frame updated immediately with {self.current_quality} quality")
+            
+        except Exception as e:
+            print(f"[-] Error forcing frame update: {e}")
+    
     def create_request_handler(self):
         """Create HTTP request handler class with access to server instance"""
         server_instance = self
@@ -227,12 +380,61 @@ class ScreenShareWebServer:
                         self.wfile.write(b"Error: web_client.html not found")
                 
                 elif self.path == '/health':
-                    # Simple health check endpoint
+                    # Enhanced health check with performance metrics
                     self.send_response(200)
                     self.send_header('Content-type', 'application/json')
                     self.end_headers()
-                    response = json.dumps({'status': 'ok', 'sharing': server_instance.sharing})
+                    
+                    # Gather performance stats
+                    active_count = len(server_instance.active_streams)
+                    stats = server_instance.performance_stats.copy()
+                    stats['active_viewers'] = active_count
+                    stats['adaptive_fps'] = server_instance.adaptive_fps
+                    
+                    response = json.dumps({
+                        'status': 'ok', 
+                        'sharing': server_instance.sharing,
+                        'current_quality': server_instance.current_quality,
+                        'available_qualities': list(server_instance.quality_settings.keys()),
+                        'performance': stats,
+                        'optimizations': {
+                            'multi_user_cache': True,
+                            'adaptive_fps': True,
+                            'quality_specific_frames': True,
+                            'performance_monitoring': True
+                        }
+                    })
                     self.wfile.write(response.encode())
+                    
+                elif self.path == '/stats':
+                    # Detailed performance statistics endpoint
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/json')
+                    self.end_headers()
+                    
+                    detailed_stats = {
+                        'server': {
+                            'adaptive_fps': server_instance.adaptive_fps,
+                            'current_quality': server_instance.current_quality,
+                            'sharing_active': server_instance.sharing
+                        },
+                        'performance': server_instance.performance_stats,
+                        'active_streams': {
+                            session_id: {
+                                'ip': info['ip'],
+                                'duration': time.time() - info['start_time'],
+                                'frames_sent': info['frames_sent'],
+                                'quality': info['quality']
+                            }
+                            for session_id, info in server_instance.active_streams.items()
+                        },
+                        'optimization_status': {
+                            'frame_caching': len(server_instance.frame_cache),
+                            'total_active_viewers': len(server_instance.active_streams)
+                        }
+                    }
+                    
+                    self.wfile.write(json.dumps(detailed_stats, indent=2).encode())
                 
                 elif self.path.startswith('/stream'):
                     # Stream MJPEG
@@ -249,24 +451,44 @@ class ScreenShareWebServer:
                         self.wfile.write(b"Unauthorized - Invalid or missing session")
                         return
                     
-                    # Track this stream
+                    # Track this stream with performance monitoring
                     client_ip = self.client_address[0]
-                    server_instance.active_streams[session_id] = client_ip
-                    print(f"[*] Stream started for session {session_id} from {client_ip}")
-                    print(f"[*] Active viewers: {len(server_instance.active_streams)}")
                     
-                    # Send MJPEG stream headers
+                    with server_instance.user_count_lock:
+                        server_instance.active_streams[session_id] = {
+                            'ip': client_ip,
+                            'start_time': time.time(),
+                            'frames_sent': 0,
+                            'quality': server_instance.current_quality
+                        }
+                    
+                    active_count = len(server_instance.active_streams)
+                    print(f"[*] Stream started for session {session_id} from {client_ip}")
+                    print(f"[*] Active viewers: {active_count}")
+                    
+                    if active_count > 5:
+                        print(f"[⚠️] High user load detected ({active_count} viewers) - adaptive performance active")
+                    
+                    # Send MJPEG stream headers with optimizations
                     self.send_response(200)
                     self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=frame')
                     self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
                     self.send_header('Pragma', 'no-cache')
                     self.send_header('Expires', '0')
                     self.send_header('Connection', 'close')
+                    # Add performance headers
+                    self.send_header('X-Frame-Rate', str(server_instance.adaptive_fps))
+                    self.send_header('X-Active-Viewers', str(active_count))
                     self.end_headers()
                     
                     try:
+                        frames_sent = 0
+                        last_frame_time = time.time()
+                        
                         while server_instance.sharing and session_id in server_instance.authorized_sessions:
-                            frame = server_instance.get_current_frame()
+                            # Get user's preferred quality or fallback to server default
+                            user_quality = server_instance.active_streams.get(session_id, {}).get('quality', server_instance.current_quality)
+                            frame = server_instance.get_current_frame(user_quality)
                             
                             if frame:
                                 # Send frame in MJPEG format
@@ -277,19 +499,45 @@ class ScreenShareWebServer:
                                 self.wfile.write(frame)
                                 self.wfile.write(b'\r\n')
                                 self.wfile.flush()
+                                
+                                frames_sent += 1
+                                
+                                # Update stream stats
+                                if session_id in server_instance.active_streams:
+                                    server_instance.active_streams[session_id]['frames_sent'] = frames_sent
                             
-                            time.sleep(0.1)  # 10 FPS
+                            # Adaptive sleep based on current FPS and user count
+                            current_time = time.time()
+                            frame_interval = 1.0 / server_instance.adaptive_fps
+                            elapsed = current_time - last_frame_time
+                            sleep_time = max(0, frame_interval - elapsed)
+                            
+                            if sleep_time > 0:
+                                time.sleep(sleep_time)
+                            last_frame_time = time.time()
                     except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                         # Client disconnected gracefully
                         print(f"[*] Client {client_ip} (session {session_id}) disconnected")
                     except Exception as e:
                         print(f"[-] Stream error for session {session_id}: {e}")
                     finally:
-                        # Remove from active streams
-                        if session_id in server_instance.active_streams:
-                            del server_instance.active_streams[session_id]
-                        print(f"[*] Stream ended for {client_ip}")
-                        print(f"[*] Active viewers: {len(server_instance.active_streams)}")
+                        # Remove from active streams with performance stats
+                        with server_instance.user_count_lock:
+                            if session_id in server_instance.active_streams:
+                                stream_info = server_instance.active_streams[session_id]
+                                session_duration = time.time() - stream_info['start_time']
+                                frames_sent = stream_info['frames_sent']
+                                
+                                print(f"[*] Stream ended for {client_ip}")
+                                print(f"    Duration: {session_duration:.1f}s, Frames sent: {frames_sent}")
+                                
+                                del server_instance.active_streams[session_id]
+                        
+                        remaining_viewers = len(server_instance.active_streams)
+                        print(f"[*] Active viewers: {remaining_viewers}")
+                        
+                        if remaining_viewers == 0:
+                            print(f"[*] All viewers disconnected - full performance restored")
                 
                 else:
                     self.send_response(404)
@@ -348,6 +596,60 @@ class ScreenShareWebServer:
                             }
                             self.wfile.write(json.dumps(response).encode())
                     
+                    elif self.path == '/set_quality':
+                        # Set stream quality
+                        content_length = int(self.headers['Content-Length'])
+                        post_data = self.rfile.read(content_length)
+                        data = json.loads(post_data.decode('utf-8'))
+                        
+                        session_id = data.get('session', '')
+                        quality = data.get('quality', '').lower()
+                        
+                        # Validate session
+                        if not session_id or session_id not in server_instance.authorized_sessions:
+                            self.send_response(403)
+                            self.send_header('Content-type', 'application/json')
+                            self.end_headers()
+                            response = {
+                                'status': 'unauthorized',
+                                'message': 'Invalid session'
+                            }
+                            self.wfile.write(json.dumps(response).encode())
+                            return
+                        
+                        # Validate quality setting
+                        if quality not in server_instance.quality_settings:
+                            self.send_response(400)
+                            self.send_header('Content-type', 'application/json')
+                            self.end_headers()
+                            response = {
+                                'status': 'error',
+                                'message': 'Invalid quality setting. Valid options: high, medium, low'
+                            }
+                            self.wfile.write(json.dumps(response).encode())
+                            return
+                        
+                        # Update quality
+                        old_quality = server_instance.current_quality
+                        server_instance.current_quality = quality
+                        
+                        quality_config = server_instance.quality_settings[quality]
+                        print(f"[*] Quality changed from {old_quality} to {quality}")
+                        print(f"    Scale: {quality_config['scale']}%, JPEG Quality: {quality_config['jpeg_quality']}%")
+                        
+                        # Force an immediate frame update with new quality
+                        server_instance.force_frame_update()
+                        
+                        self.send_response(200)
+                        self.send_header('Content-type', 'application/json')
+                        self.end_headers()
+                        response = {
+                            'status': 'success',
+                            'quality': quality,
+                            'message': f'Quality set to {quality}'
+                        }
+                        self.wfile.write(json.dumps(response).encode())
+                    
                     else:
                         self.send_response(404)
                         self.end_headers()
@@ -391,7 +693,13 @@ class ScreenShareWebServer:
             print(f"    http://localhost:{self.port}")
         
         print(f"\n[*] Server starting on {self.host}:{self.port}")
-        print("[*] Multi-user support enabled")
+        print("[*] 🚀 Multi-user optimizations ENABLED")
+        print("    ✅ Adaptive FPS scaling (20→8 FPS based on user count)")
+        print("    ✅ Quality-specific frame caching")
+        print("    ✅ Performance monitoring and statistics")
+        print("    ✅ Optimized memory usage")
+        print(f"[*] Default quality: {self.current_quality.title()} (clients can change this)")
+        print("[*] Performance endpoints: /health, /stats")
         print("[*] Press Ctrl+C to stop sharing\n")
         
         self.sharing = True

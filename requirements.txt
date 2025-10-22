@@ -1,13 +1,26 @@
-# Core dependencies (required)
+# Screen Sharing Application Dependencies
+
+# Core Screen Capture
 mss==9.0.1
+Pillow==10.1.0
+
+# GUI Framework
 opencv-python==4.8.1.78
 numpy==1.24.3
 pyautogui==0.9.54
 
-# Optional: For remote access over internet (ngrok tunneling)
-# Uncomment the line below if you want to share screen across different networks
-pyngrok==7.0.0
+# Web Framework
+Flask==3.0.0
+Flask-CORS==4.0.0
 
-# Note: To enable internet sharing, install pyngrok:
-# pip install pyngrok
-# Then run: ngrok http screenshare_URL
+# HTTP Requests
+requests==2.31.0
+
+# ngrok Integration (Optional but recommended)
+pyngrok==7.0.3
+
+# System Tray Support (Optional but recommended for compiled apps)
+pystray==0.19.5
+
+# For EXE Compilation
+PyInstaller==6.3.0
