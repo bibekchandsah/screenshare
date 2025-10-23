@@ -10,8 +10,8 @@ hiddenimports += collect_submodules('cv2')
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[('C:\\Users\\bibek\\AppData\\Local\\ngrok\\ngrok.exe', '.')],
-    datas=[('server.py', '.'), ('client.py', '.'), ('web_server.py', '.'), ('ngrok_helper.py', '.'), ('web_client.html', '.')],
+    binaries=[('cloudflared.exe', '.'), ('ngrok.exe', '.')],
+    datas=[('server.py', '.'), ('client.py', '.'), ('web_server.py', '.'), ('ngrok_helper.py', '.'), ('cloudflare_helper.py', '.'), ('web_client.html', '.'), ('icon.ico', '.'), ('icon.png', '.')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

@@ -53,28 +53,48 @@ def check_cloudflared_installed():
         except (subprocess.TimeoutExpired, FileNotFoundError):
             continue
     
-    # Check if cloudflared exists in current directory
-    current_dir = os.getcwd()
-    local_paths = [
-        os.path.join(current_dir, 'cloudflared.exe'),
-        os.path.join(current_dir, 'cloudflared')
-    ]
+    # Check if cloudflared exists in local directories
+    search_dirs = []
     
-    for path in local_paths:
-        if os.path.exists(path):
-            try:
-                result = subprocess.run(
-                    [path, '--version'], 
-                    capture_output=True, 
-                    text=True, 
-                    timeout=10
-                )
-                if result.returncode == 0:
-                    version = result.stdout.strip()
-                    print(f"[✓] cloudflared found locally: {version}")
-                    return True, path
-            except:
-                continue
+    # Add current working directory
+    search_dirs.append(os.getcwd())
+    
+    # If running as PyInstaller executable, also check the temporary directory
+    if getattr(sys, 'frozen', False):
+        # PyInstaller temp directory
+        search_dirs.append(sys._MEIPASS)
+        print(f"[DEBUG] PyInstaller temp dir: {sys._MEIPASS}")
+    
+    # Add script directory (for development)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if script_dir not in search_dirs:
+        search_dirs.append(script_dir)
+    
+    print(f"[DEBUG] Searching for cloudflared in directories: {search_dirs}")
+    
+    for search_dir in search_dirs:
+        local_paths = [
+            os.path.join(search_dir, 'cloudflared.exe'),
+            os.path.join(search_dir, 'cloudflared')
+        ]
+        
+        for path in local_paths:
+            if os.path.exists(path):
+                try:
+                    result = subprocess.run(
+                        [path, '--version'], 
+                        capture_output=True, 
+                        text=True, 
+                        timeout=10
+                    )
+                    if result.returncode == 0:
+                        version = result.stdout.strip()
+                        print(f"[✓] cloudflared found at: {path}")
+                        print(f"    Version: {version}")
+                        return True, path
+                except Exception as e:
+                    print(f"[DEBUG] Error testing {path}: {e}")
+                    continue
     
     return False, None
 

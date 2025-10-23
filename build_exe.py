@@ -25,7 +25,12 @@ def build_exe():
         'client.py',
         'web_server.py',
         'ngrok_helper.py',
-        'web_client.html'
+        'cloudflare_helper.py',
+        'web_client.html',
+        'cloudflared.exe',
+        'ngrok.exe',
+        'icon.ico',
+        'icon.png'
     ]
     
     print("Checking required files...")
@@ -43,47 +48,6 @@ def build_exe():
         print("Please ensure all files are in the same directory.")
         sys.exit(1)
     
-    # Check for ngrok binary and offer to download it
-    print("\n" + "=" * 60)
-    print("Checking for ngrok binary...")
-    print("=" * 60)
-    
-    ngrok_paths = [
-        os.path.join(os.path.expanduser('~'), 'ngrok.exe'),
-        os.path.join(script_dir, 'ngrok.exe'),
-        'C:\\ngrok\\ngrok.exe',
-    ]
-    
-    # Also check in pyngrok cache
-    try:
-        from pyngrok import conf
-        pyngrok_dir = conf.get_default().ngrok_path
-        if pyngrok_dir and os.path.exists(pyngrok_dir):
-            ngrok_paths.insert(0, pyngrok_dir)
-    except:
-        pass
-    
-    ngrok_binary = None
-    for path in ngrok_paths:
-        if os.path.exists(path):
-            ngrok_binary = path
-            print(f"  ✓ Found ngrok at: {path}")
-            break
-    
-    if not ngrok_binary:
-        print("  ⚠ ngrok binary not found!")
-        print("\n💡 IMPORTANT: ngrok is optional but recommended for internet sharing.")
-        print("   Without ngrok, you can only share on local network (LAN).")
-        print("\n   To add ngrok support:")
-        print("   1. Download from: https://ngrok.com/download")
-        print("   2. Extract ngrok.exe")
-        print("   3. Place in any of these locations:")
-        print(f"      • {os.path.expanduser('~')}\\ngrok.exe")
-        print(f"      • {script_dir}\\ngrok.exe")
-        print("      • C:\\ngrok\\ngrok.exe")
-        print("\n   Or run: .\\install_ngrok.ps1")
-        print("\n⚠ Continuing build WITHOUT ngrok...")
-        print("   (You can add it later and rebuild)")
     
     print("\n" + "=" * 60)
     print("Starting PyInstaller build...")
@@ -103,12 +67,17 @@ def build_exe():
         '--add-data=client.py;.',
         '--add-data=web_server.py;.',
         '--add-data=ngrok_helper.py;.',
+        '--add-data=cloudflare_helper.py;.',
         '--add-data=web_client.html;.',
         
         # Data files
         # '--add-data=path/to/datafile;destination_folder',
         '--add-data=icon.ico;.',
         '--add-data=icon.png;.',
+        
+        # binary files
+        '--add-binary=cloudflared.exe;.',
+        '--add-binary=ngrok.exe;.',
         
         # Exclude Qt bindings (we don't use Qt, only OpenCV)
         '--exclude-module=PyQt5',

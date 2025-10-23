@@ -100,15 +100,34 @@ def start_ngrok_tunnel(port=5000, protocol='http', region='us'):
             # Try to use system ngrok first if available
             system_ngrok = None
             if sys.platform == 'win32':
-                # Check common Windows paths
-                possible_paths = [
+                # Check PyInstaller bundled location first, then common Windows paths
+                possible_paths = []
+                
+                # Add current directory (where main exe is located)
+                possible_paths.append(os.path.join(os.getcwd(), 'ngrok.exe'))
+                
+                # Add PyInstaller temp directory if available
+                if hasattr(sys, '_MEIPASS'):
+                    print(f"[DEBUG] PyInstaller temp dir: {sys._MEIPASS}")
+                    possible_paths.append(os.path.join(sys._MEIPASS, 'ngrok.exe'))
+                
+                # Add script directory
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                possible_paths.append(os.path.join(script_dir, 'ngrok.exe'))
+                
+                # Add traditional system paths
+                possible_paths.extend([
                     os.path.expanduser('~\\ngrok.exe'),
                     'C:\\ngrok\\ngrok.exe',
                     'C:\\Program Files\\ngrok\\ngrok.exe',
-                ]
+                ])
+                
+                print(f"[DEBUG] Searching for ngrok in directories: {[os.path.dirname(p) for p in possible_paths[:3]]}")
+                
                 for path in possible_paths:
                     if os.path.exists(path):
                         system_ngrok = path
+                        print(f"[✓] ngrok found at: {system_ngrok}")
                         break
             
             if system_ngrok:
@@ -419,11 +438,23 @@ def setup_ngrok_authtoken(authtoken=None):
             ngrok_paths = []
             
             if sys.platform == 'win32':
-                ngrok_paths = [
+                # Check PyInstaller bundled location first, then common paths
+                # Add current directory (where main exe is located)
+                ngrok_paths.append(os.path.join(os.getcwd(), 'ngrok.exe'))
+                
+                # Add PyInstaller temp directory if available
+                if hasattr(sys, '_MEIPASS'):
+                    ngrok_paths.append(os.path.join(sys._MEIPASS, 'ngrok.exe'))
+                
+                # Add script directory
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                ngrok_paths.append(os.path.join(script_dir, 'ngrok.exe'))
+                
+                # Add traditional system paths
+                ngrok_paths.extend([
                     os.path.join(os.path.expanduser('~'), 'ngrok.exe'),
                     'C:\\ngrok\\ngrok.exe',
-                    os.path.join(os.getcwd(), 'ngrok.exe'),
-                ]
+                ])
             else:
                 ngrok_paths = [
                     '/usr/local/bin/ngrok',

@@ -27,7 +27,11 @@ def build_exe():
         'web_server.py',
         'ngrok_helper.py',
         'cloudflare_helper.py',
-        'web_client.html'
+        'web_client.html',
+        'cloudflared.exe',
+        'ngrok.exe',
+        'icon.ico',
+        'icon.png'
     ]
     
     print("Checking required files...")
@@ -45,36 +49,6 @@ def build_exe():
         print("Please ensure all files are in the same directory.")
         sys.exit(1)
     
-    # Check for ngrok binary
-    print("\n" + "=" * 60)
-    print("Checking for ngrok binary...")
-    print("=" * 60)
-    
-    ngrok_paths = [
-        os.path.join(os.path.expanduser('~'), 'ngrok.exe'),
-        os.path.join(script_dir, 'ngrok.exe'),
-        'C:\\ngrok\\ngrok.exe',
-    ]
-    
-    # Also check in pyngrok cache
-    try:
-        from pyngrok import conf
-        pyngrok_dir = conf.get_default().ngrok_path
-        if pyngrok_dir and os.path.exists(pyngrok_dir):
-            ngrok_paths.insert(0, pyngrok_dir)
-    except:
-        pass
-    
-    ngrok_binary = None
-    for path in ngrok_paths:
-        if os.path.exists(path):
-            ngrok_binary = path
-            print(f"  ✓ Found ngrok at: {path}")
-            break
-    
-    if not ngrok_binary:
-        print("  ⚠ ngrok binary not found (optional)")
-        print("   Run: .\\install_ngrok.ps1 to add ngrok support")
     
     print("\n" + "=" * 60)
     print("Starting PyInstaller build...")
@@ -94,16 +68,22 @@ def build_exe():
         '--add-data=client.py;.',
         '--add-data=web_server.py;.',
         '--add-data=ngrok_helper.py;.',
+        '--add-data=cloudflare_helper.py;.',
         '--add-data=web_client.html;.',
+        
+        # Data files
+        # '--add-data=path/to/datafile;destination_folder',
+        '--add-data=icon.ico;.',
+        '--add-data=icon.png;.',
+        # '--add-data=cloudflared.exe;.',
+        # '--add-data=ngrok.exe;.',
+        
+        # binary files
+        '--add-binary=cloudflared.exe;.',
+        '--add-binary=ngrok.exe;.',
+        
     ]
     
-    # Add ngrok binary if found
-    if ngrok_binary:
-        print(f"[*] Including ngrok binary in EXE: {ngrok_binary}")
-        pyinstaller_args.append(f'--add-binary={ngrok_binary};.')
-        print("  ✓ ngrok will be bundled with EXE")
-    else:
-        print("  ⚠ Building without ngrok")
     
     # Continue with other arguments
     pyinstaller_args.extend([

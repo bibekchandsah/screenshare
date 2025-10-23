@@ -342,11 +342,24 @@ def run_cloudflare():
         # Import cloudflare helper
         import subprocess
         import os
+        import sys
+        
+        # When running as PyInstaller executable, check the temporary directory
+        if getattr(sys, 'frozen', False):
+            # Running as executable - files are in sys._MEIPASS
+            bundle_dir = sys._MEIPASS
+            cloudflare_helper_path = os.path.join(bundle_dir, 'cloudflare_helper.py')
+        else:
+            # Running as script - files are in current directory
+            bundle_dir = os.path.dirname(os.path.abspath(__file__))
+            cloudflare_helper_path = os.path.join(bundle_dir, 'cloudflare_helper.py')
         
         # Check if cloudflare_helper.py exists
-        if not os.path.exists('cloudflare_helper.py'):
+        if not os.path.exists(cloudflare_helper_path):
             print("❌ cloudflare_helper.py not found!")
-            print("\nMake sure cloudflare_helper.py exists in the same directory.")
+            print(f"\nSearched in: {cloudflare_helper_path}")
+            print("\nThis might be a build issue. Try rebuilding the executable with:")
+            print("  python build_console_exe.py")
             input("\nPress Enter to return to main menu...")
             return
         
@@ -356,11 +369,22 @@ def run_cloudflare():
         
         # Run cloudflare_helper.py directly
         try:
-            subprocess.run([sys.executable, 'cloudflare_helper.py'], check=True)
+            # For PyInstaller executable, run the bundled cloudflare_helper
+            if getattr(sys, 'frozen', False):
+                # We need to run the helper directly since it's bundled
+                # Import and run the main function
+                sys.path.insert(0, bundle_dir)
+                import cloudflare_helper
+                cloudflare_helper.main()
+            else:
+                # Running as script, use subprocess
+                subprocess.run([sys.executable, cloudflare_helper_path], check=True)
         except subprocess.CalledProcessError:
             print("\n⚠️  Cloudflare helper exited")
         except KeyboardInterrupt:
             print("\n\n[*] Returned from Cloudflare helper")
+        except Exception as e:
+            print(f"\n❌ Error running Cloudflare helper: {e}")
         
         input("\nPress Enter to return to main menu...")
         
