@@ -26,6 +26,7 @@ def build_exe():
         'client.py',
         'web_server.py',
         'ngrok_helper.py',
+        'cloudflare_helper.py',
         'web_client.html'
     ]
     
