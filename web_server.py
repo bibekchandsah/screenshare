@@ -13,6 +13,13 @@ import time
 import os
 import queue
 
+# Try to import clipboard support
+try:
+    import pyperclip
+    CLIPBOARD_AVAILABLE = True
+except ImportError:
+    CLIPBOARD_AVAILABLE = False
+
 # Import for cursor capture (cross-platform)
 try:
     import pyautogui
@@ -57,6 +64,20 @@ class ScreenShareWebServer:
             'avg_frame_time': 0
         }
         
+    def copy_to_clipboard(self, text, description="text"):
+        """Copy text to clipboard with user feedback"""
+        if CLIPBOARD_AVAILABLE:
+            try:
+                pyperclip.copy(text)
+                print(f"📋 {description} copied to clipboard!")
+                return True
+            except Exception as e:
+                print(f"⚠️  Could not copy {description} to clipboard: {e}")
+                return False
+        else:
+            print(f"⚠️  Clipboard not available. Install pyperclip with: pip install pyperclip")
+            return False
+
     def generate_security_code(self, length=6):
         """Generate a random alphanumeric security code"""
         characters = string.ascii_uppercase + string.digits
@@ -679,7 +700,17 @@ class ScreenShareWebServer:
         print("="*60)
         print("Share this code with people who want to view your screen")
         print("Multiple viewers can connect simultaneously!")
-        print("="*60 + "\n")
+        print("="*60)
+        
+        # Do not copy security code to clipboard here; let main.py handle it interactively
+        # Prompt to copy security code to clipboard
+        print()
+        user_input = input("Press C to copy the security code to clipboard, or any other key to skip: ").strip().lower()
+        if user_input == 'c':
+            self.copy_to_clipboard(code, "Security code")
+            print("[✓] Security code copied to clipboard!")
+        else:
+            print("[!] Security code not copied. You can copy it manually above.")
         
         # Get local IP addresses
         try:

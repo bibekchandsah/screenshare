@@ -4,6 +4,13 @@ import threading
 import webbrowser
 from pathlib import Path
 
+# Try to import clipboard support
+try:
+    import pyperclip
+    CLIPBOARD_AVAILABLE = True
+except ImportError:
+    CLIPBOARD_AVAILABLE = False
+
 # Try to import pystray for system tray support
 try:
     import pystray
@@ -19,6 +26,20 @@ except ImportError:
 tray_icon = None
 console_visible = True
 app_running = True
+
+def copy_to_clipboard(text, description="text"):
+    """Copy text to clipboard with user feedback"""
+    if CLIPBOARD_AVAILABLE:
+        try:
+            pyperclip.copy(text)
+            print(f"📋 {description} copied to clipboard!")
+            return True
+        except Exception as e:
+            print(f"⚠️  Could not copy {description} to clipboard: {e}")
+            return False
+    else:
+        print(f"⚠️  Clipboard not available. Install pyperclip with: pip install pyperclip")
+        return False
 
 def clear_screen():
     """Clear the terminal screen"""
@@ -471,6 +492,10 @@ def run_cloudflare_merged():
                 print(f"\n✅ CLOUDFLARE TUNNEL ACTIVE!")
                 print(f"🌐 Public URL: {tunnel_url}")
                 print(f"📡 Local: localhost:5000")
+                
+                # Copy URL to clipboard
+                copy_to_clipboard(tunnel_url, "Cloudflare URL")
+                
                 print()
                 print("-" * 50)
                 print()
@@ -497,6 +522,16 @@ def run_cloudflare_merged():
                 
                 # Start the web server
                 server.start_sharing()
+
+                # Prompt to copy security code to clipboard
+                security_code = getattr(server, 'security_code', None)
+                if security_code:
+                    user_input = input("\nPress C to copy the security code to clipboard, or any other key to skip: ").strip().lower()
+                    if user_input == 'c':
+                        copy_to_clipboard(security_code, "Security code")
+                        print("[✓] Security code copied to clipboard!")
+                    else:
+                        print("[!] Security code not copied. You can copy it manually above.")
                 
             else:
                 print("❌ Failed to start Cloudflare tunnel")
