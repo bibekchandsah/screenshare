@@ -8,7 +8,7 @@ A Python-based screen sharing application with security code authentication and 
 - 🔒 **Secure Connection**: Random security code generation + manual approval system
 - 📺 **Real-time Streaming**: Live screen capture and streaming at high quality
 - 🚀 **Easy to Use**: Simple menu-driven interface
-- 🔌 **Network Support**: Works over LAN, localhost, and **internet** (with ngrok)
+- 🔌 **Network Support**: Works over LAN, localhost, and **internet** (with Cloudflare Tunnel/ngrok)
 - 🌐 **Remote Access**: Share screen across different networks/locations
 - 👥 **Multiple Viewers**: Support for unlimited simultaneous viewers
 - 🎯 **Unified Launcher**: Single entry point with menu options
@@ -306,7 +306,53 @@ By default, screen sharing only works when both users are on the **same WiFi/loc
 
 ### Solution: Remote Access Options
 
-#### **Option 1: ngrok (Easiest, Recommended) ⭐**
+#### **Option 1: Cloudflare Tunnel (Best Performance, Unlimited Bandwidth) 🚀**
+
+**Why Cloudflare? Superior Choice:**
+- 🌐 **No Bandwidth Limits** (ngrok has monthly limits)
+- ⚡ **Enterprise Performance** (Cloudflare's global CDN)
+- 👥 **Multiple Users** (perfect for multi-user optimization)
+- 🆓 **Completely Free** (no subscription required)
+- 🔒 **More Secure** (enterprise-grade infrastructure)
+
+**Quick Setup:**
+
+1. **Download cloudflared:**
+   - Visit: https://github.com/cloudflare/cloudflared/releases
+   - Download for your OS and add to PATH
+
+2. **Login to Cloudflare:**
+   ```bash
+   cloudflared tunnel login
+   ```
+
+3. **Run the Cloudflare helper:**
+   ```bash
+   python cloudflare_helper.py
+   ```
+
+4. **Start tunnel and server:**
+   ```bash
+   # Choose option 1 (Web Mode) or 2 (Desktop Mode)
+   # Helper will create tunnel automatically
+   # Start your screen share when prompted
+   ```
+
+5. **Share the public URL:**
+   - Cloudflare gives you: `https://abc123.trycloudflare.com`
+   - Share this URL + security code with anyone, anywhere!
+
+**Cloudflare Benefits:**
+- ✅ **Unlimited Bandwidth** (vs ngrok's 1GB/month limit)
+- ✅ **Multiple Concurrent Users** (perfect for presentations)
+- ✅ **Enterprise Performance** (faster than ngrok)
+- ✅ **No Monthly Fees** (completely free)
+- ✅ **Global CDN** (better worldwide performance)
+- ✅ **More Reliable** (enterprise-grade uptime)
+
+---
+
+#### **Option 2: ngrok (Alternative, Good for Testing) ⭐**
 
 **Quick Setup:**
 
@@ -349,12 +395,18 @@ Multiple viewers can connect simultaneously!
    - ngrok gives you: `https://abc123.ngrok.io`
    - Share this URL + security code with anyone, anywhere!
 
-**Benefits:**
+**ngrok Benefits:**
 - ✅ Works from anywhere in the world
 - ✅ No router configuration needed
 - ✅ Secure HTTPS tunnel
 - ✅ Free tier available
 - ✅ Setup in 2 minutes
+
+**ngrok Limitations:**
+- ❌ 1GB/month bandwidth limit (free tier)
+- ❌ Limited concurrent users
+- ❌ Slower performance vs Cloudflare
+- ❌ Monthly subscription for unlimited
 
 ---
 
@@ -369,14 +421,18 @@ python main.py → 3  # Client
 
 ### Different Locations:
 ```bash
-# Use ngrok tunnel first
-python main.py → 4 → 1  # Server with tunnel  
-python main.py → 3      # Client (use ngrok URL)
+# Use Cloudflare Tunnel (Recommended)
+python cloudflare_helper.py  # Setup tunnel first
+python main.py → 1/2          # Server (use tunnel URL)
+
+# Alternative: Use ngrok tunnel  
+python ngrok_helper.py        # Setup ngrok tunnel
+python main.py → 1/2          # Server (use ngrok URL)
 ```
 
 **Yes, your application supports cross-location screen sharing! 🎉**
 
-The **ngrok integration** makes it very easy to connect from different locations/WiFi networks. Just use **Option 4** before **Option 1** and you're good to go!
+The **Cloudflare Tunnel integration** provides unlimited bandwidth and better performance for multiple users, while **ngrok integration** offers quick setup for testing. Both make it very easy to connect from different locations/WiFi networks!
 
 ---
 
@@ -384,8 +440,9 @@ The **ngrok integration** makes it very easy to connect from different locations
 
 | Scenario | Server Steps | Client Steps |
 |----------|--------------|--------------|
-| **Same WiFi** | `main.py → 1` | `main.py → 3` |
-| **Different WiFi** | `main.py → 4 → 1` | `main.py → 3` (use ngrok URL) |
+| **Same WiFi** | `main.py → 1/2` | `main.py → 3` or browser |
+| **Different WiFi (Cloudflare)** | `cloudflare_helper.py` | Use Cloudflare URL |
+| **Different WiFi (ngrok)** | `ngrok_helper.py` | Use ngrok URL |
 
 ---
 

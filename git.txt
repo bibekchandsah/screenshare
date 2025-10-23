@@ -41,3 +41,4 @@ curl -s -o nul -w "%{http_code}" https://fioricet-recipients-usr-recipients.tryc
 
 pip install cloudflare
 cloudflared tunnel --protocol http2 --url http://localhost:5000
+https://copilot.microsoft.com/shares/4rcdcS2vcxrwe3UyaEWXa (cloudflare)
