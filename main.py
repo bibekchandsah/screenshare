@@ -181,16 +181,17 @@ def main_menu():
         print("  [1] Share My Screen (Desktop App)")
         print("  [2] Share My Screen (Web Browser - Mobile Friendly)")
         print("  [3] View Someone's Screen (Desktop App)")
-        print("  [4] Start ngrok Tunnel (For Internet Access)")
-        print("  [5] Check ngrok Status")
-        print("  [6] Setup ngrok Authtoken")
-        print("  [7] Exit")
+        print("  [4] Start Cloudflare Tunnel (Unlimited Bandwidth)")
+        print("  [5] Start ngrok Tunnel (For Internet Access)")
+        print("  [6] Check ngrok Status")
+        print("  [7] Setup ngrok Authtoken")
+        print("  [8] Exit")
         print()
         print("-" * 60)
         print(" " * 39, end="𝓓𝓮𝓿𝓮𝓵𝓸𝓹𝓮𝓭 𝓫𝔂 𝓑𝓲𝓫𝓮𝓴...")
         print()
         
-        choice = input("\nEnter your choice (1-7): ").strip()
+        choice = input("\nEnter your choice (1-8): ").strip()
         
         if choice == '1':
             return 'server'
@@ -199,12 +200,14 @@ def main_menu():
         elif choice == '3':
             return 'client'
         elif choice == '4':
-            return 'ngrok'
+            return 'cloudflare'
         elif choice == '5':
-            return 'ngrok_status'
+            return 'ngrok'
         elif choice == '6':
-            return 'ngrok_authtoken'
+            return 'ngrok_status'
         elif choice == '7':
+            return 'ngrok_authtoken'
+        elif choice == '8':
             # Confirm before exiting
             print()
             confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
@@ -213,7 +216,7 @@ def main_menu():
                 sys.exit(0)
             # If 'no', loop continues and menu is shown again
         else:
-            print("\n❌ Invalid choice! Please enter 1-7.")
+            print("\n❌ Invalid choice! Please enter 1-8.")
             input("Press Enter to continue...")
 
 def run_server():
@@ -322,6 +325,47 @@ def run_web_server():
     except ImportError as e:
         print(f"❌ Error: Could not import web server module - {e}")
         print("Make sure web_server.py exists in the same directory.")
+        input("\nPress Enter to return to main menu...")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        input("\nPress Enter to return to main menu...")
+
+def run_cloudflare():
+    """Run Cloudflare tunnel setup"""
+    clear_screen()
+    print_banner()
+    print("🌐 LAUNCHING CLOUDFLARE TUNNEL")
+    print("=" * 60)
+    print()
+    
+    try:
+        # Import cloudflare helper
+        import subprocess
+        import os
+        
+        # Check if cloudflare_helper.py exists
+        if not os.path.exists('cloudflare_helper.py'):
+            print("❌ cloudflare_helper.py not found!")
+            print("\nMake sure cloudflare_helper.py exists in the same directory.")
+            input("\nPress Enter to return to main menu...")
+            return
+        
+        print("[*] Starting Cloudflare Tunnel Helper...")
+        print("[*] ♾️  Unlimited bandwidth • � Multiple users • ⚡ Enterprise performance")
+        print()
+        
+        # Run cloudflare_helper.py directly
+        try:
+            subprocess.run([sys.executable, 'cloudflare_helper.py'], check=True)
+        except subprocess.CalledProcessError:
+            print("\n⚠️  Cloudflare helper exited")
+        except KeyboardInterrupt:
+            print("\n\n[*] Returned from Cloudflare helper")
+        
+        input("\nPress Enter to return to main menu...")
+        
+    except ImportError as e:
+        print(f"❌ Error: Import error - {e}")
         input("\nPress Enter to return to main menu...")
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -598,6 +642,8 @@ def main():
                 run_web_server()
             elif choice == 'client':
                 run_client()
+            elif choice == 'cloudflare':
+                run_cloudflare()
             elif choice == 'ngrok':
                 run_ngrok()
             elif choice == 'ngrok_status':
