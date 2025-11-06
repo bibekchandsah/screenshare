@@ -42,10 +42,7 @@ class TrustedScreenShareWebServer:
         self.current_frame = None
         self.frame_lock = threading.Lock()
         self.active_streams = {}  # Track active streaming connections
-        self.pending_approvals = {}  # session_id -> {'ip': ip, 'approved': None}
-        self.approval_lock = threading.Lock()  # Lock for approval process
-        self.approval_queue = queue.Queue()  # Queue for approval requests
-        self.approval_processor_thread = None  # Thread to process approvals sequentially
+        self.connected_users_log = []  # Log of all connected users
         
         # Quality settings
         self.quality_settings = {
@@ -196,51 +193,26 @@ class TrustedScreenShareWebServer:
         """Always return True for trusted mode - no security check"""
         return True
     
-    def process_approval_queue(self):
-        """Process approval requests sequentially"""
-        print("[*] Approval processor started - requests will be handled sequentially")
+    def log_connection(self, session_id, client_ip):
+        """Log a new connection"""
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        log_entry = {
+            'timestamp': timestamp,
+            'session_id': session_id,
+            'ip': client_ip
+        }
+        self.connected_users_log.append(log_entry)
         
-        while self.sharing:
-            try:
-                # Get next approval request (blocks until available)
-                session_id, client_ip = self.approval_queue.get(timeout=1)
-                
-                if not self.sharing:
-                    break
-                
-                # Display approval request
-                print("\n" + "="*60)
-                print(f"[!] Web connection request from {client_ip}")
-                print(f"[!] Session: {session_id}...")
-                
-                # Get current connection count
-                with self.approval_lock:
-                    current_users = len([s for s in self.pending_approvals.values() if s.get('approved') == True])
-                
-                print(f"[!] Currently {current_users} user(s) connected")
-                print(f"[!] Pending requests in queue: {self.approval_queue.qsize()}")
-                print("="*60)
-                
-                # Get user approval
-                approval = input("Do you want to allow this connection? (y/n): ").strip().lower()
-                
-                # Update approval status
-                with self.approval_lock:
-                    if session_id in self.pending_approvals:
-                        self.pending_approvals[session_id]['approved'] = (approval == 'y')
-                        
-                        if approval == 'y':
-                            print(f"[+] Web client {client_ip} connection approved")
-                            print(f"[+] Total connected users: {current_users + 1}")
-                        else:
-                            print(f"[-] Web client {client_ip} connection denied")
-                
-            except queue.Empty:
-                continue
-            except Exception as e:
-                print(f"[-] Error in approval processor: {e}")
-        
-        print("[*] Approval processor stopped")
+        # Display connection log
+        print("\n" + "="*60)
+        print(f"[✓] NEW CONNECTION")
+        print("="*60)
+        print(f"📅 Time: {timestamp}")
+        print(f"🌐 IP Address: {client_ip}")
+        print(f"🔑 Session ID: {session_id}")
+        print(f"👥 Total Connections: {len(self.connected_users_log)}")
+        print(f"🟢 Active Viewers: {len(self.active_streams)}")
+        print("="*60 + "\n")
     
     def create_handler(self):
         """Create HTTP request handler class"""
@@ -298,58 +270,15 @@ class TrustedScreenShareWebServer:
                         self.wfile.write(json.dumps(server_instance.performance_stats).encode())
                     
                     elif self.path.startswith('/stream'):
-                        # Handle stream request - no security code needed in trusted mode
+                        # Handle stream request - auto-approve in trusted mode
                         session_id = self.path.split('?')[1].split('=')[1] if '?' in self.path else str(random.randint(100000, 999999))
                         client_ip = self.client_address[0]
                         
-                        # Add to pending approvals
-                        with server_instance.approval_lock:
-                            server_instance.pending_approvals[session_id] = {
-                                'ip': client_ip,
-                                'approved': None
-                            }
-                        
-                        # Add to approval queue
-                        server_instance.approval_queue.put((session_id, client_ip))
-                        
-                        # Wait for approval
-                        timeout = 60  # 60 seconds timeout
-                        start_time = time.time()
-                        approved = None
-                        
-                        while time.time() - start_time < timeout:
-                            with server_instance.approval_lock:
-                                if session_id in server_instance.pending_approvals:
-                                    approved = server_instance.pending_approvals[session_id]['approved']
-                                    if approved is not None:
-                                        break
-                            time.sleep(0.1)
-                        
-                        # Check approval result
-                        if approved is None:
-                            # Timeout
-                            with server_instance.approval_lock:
-                                server_instance.pending_approvals.pop(session_id, None)
-                            
-                            self.send_response(408)
-                            self.send_header('Content-type', 'text/plain')
-                            self.end_headers()
-                            self.wfile.write(b'Connection approval timeout')
-                            return
-                        
-                        elif not approved:
-                            # Denied
-                            with server_instance.approval_lock:
-                                server_instance.pending_approvals.pop(session_id, None)
-                            
-                            self.send_response(403)
-                            self.send_header('Content-type', 'text/plain')
-                            self.end_headers()
-                            self.wfile.write(b'Connection denied by host')
-                            return
-                        
-                        # Approved - add to authorized sessions
+                        # Automatically authorize in trusted mode
                         server_instance.authorized_sessions.add(session_id)
+                        
+                        # Log the connection
+                        server_instance.log_connection(session_id, client_ip)
                         
                         # Add to active streams
                         with server_instance.user_count_lock:
@@ -401,11 +330,10 @@ class TrustedScreenShareWebServer:
                             
                             server_instance.authorized_sessions.discard(session_id)
                             
-                            with server_instance.approval_lock:
-                                server_instance.pending_approvals.pop(session_id, None)
-                            
-                            print(f"[-] Stream ended for {client_ip}")
-                            print(f"[*] Active viewers: {len(server_instance.active_streams)}")
+                            print(f"\n[−] DISCONNECTION")
+                            print(f"[−] IP: {client_ip}")
+                            print(f"[−] Session: {session_id}")
+                            print(f"[*] Active viewers: {len(server_instance.active_streams)}\n")
                     
                     else:
                         self.send_response(404)
@@ -509,11 +437,12 @@ class TrustedScreenShareWebServer:
     def start_sharing(self):
         """Start the trusted web-based screen sharing server"""
         print("\n" + "="*60)
-        print("⚠️  TRUSTED MODE - NO SECURITY CODE")
+        print("⚠️  TRUSTED MODE - NO SECURITY CODE OR APPROVAL")
         print("="*60)
-        print("⚠️  WARNING: This mode does NOT require a security code!")
-        print("⚠️  Anyone with the URL can view your screen (after approval)")
+        print("⚠️  WARNING: Connections are automatically accepted!")
+        print("⚠️  Anyone with the URL can view your screen instantly!")
         print("⚠️  Only use with trusted users on secure networks!")
+        print("⚠️  All connections will be logged below.")
         print("="*60 + "\n")
         
         # Get local IP addresses
@@ -533,15 +462,12 @@ class TrustedScreenShareWebServer:
         print("    ✅ Quality-specific frame caching")
         print("    ✅ Performance monitoring and statistics")
         print("    ✅ Optimized memory usage")
+        print("    ✅ Auto-accept connections with logging")
         print("[*] Default quality: Medium (clients can change this)")
         print("[*] Performance endpoints: /health, /stats")
         print("[*] Press Ctrl+C to stop sharing\n")
         
         self.sharing = True
-        
-        # Start approval processor thread
-        self.approval_processor_thread = threading.Thread(target=self.process_approval_queue, daemon=True)
-        self.approval_processor_thread.start()
         
         # Start screen capture thread
         capture_thread = threading.Thread(target=self.capture_screen_loop, daemon=True)
@@ -567,10 +493,12 @@ class TrustedScreenShareWebServer:
 
 if __name__ == "__main__":
     print("\n" + "="*60)
-    print("  TRUSTED SCREEN SHARE SERVER - NO SECURITY CODE")
+    print("  TRUSTED SCREEN SHARE SERVER - AUTO-ACCEPT MODE")
     print("="*60)
-    print("\n⚠️  WARNING: This server does NOT require a security code!")
-    print("⚠️  Use only with trusted users on secure networks!\n")
+    print("\n⚠️  WARNING: This server auto-accepts ALL connections!")
+    print("⚠️  No security code or approval required!")
+    print("⚠️  Use only with trusted users on secure networks!")
+    print("⚠️  All connections will be logged.\n")
     
     server = TrustedScreenShareWebServer()
     server.start_sharing()
