@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Share Viewer - Trusted Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .viewer-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 95vw;
+            width: 100%;
+            display: none;
+        }
+
+        .info-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .info-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .warning-box strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 0.95em;
+        }
+
+        .connect-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .connect-btn:active {
+            transform: translateY(0);
+        }
+
+        .connect-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stream-container {
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #screenStream {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .quality-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quality-control label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .quality-control select {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+        }
+
+        .disconnect-btn {
+            padding: 10px 25px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .disconnect-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            text-align: center;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .container {
+                padding: 25px;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .quality-control {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .disconnect-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="icon">🖥️</div>
+        <h1>Screen Share Viewer</h1>
+        <p>Trusted Mode - No Security Code Required</p>
+    </div>
+
+    <div class="container" id="loginContainer">
+        <div class="info-section">
+            <h2>Connect to Screen Share</h2>
+            <p>You are connecting in trusted mode. No security code is required.</p>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Trusted Mode</strong>
+            <p>This connection does not require a security code. The host will approve your connection request.</p>
+        </div>
+
+        <ul class="feature-list">
+            <li>Real-time screen sharing</li>
+            <li>Adjustable quality settings</li>
+            <li>Host approval required</li>
+            <li>Multi-user support</li>
+        </ul>
+
+        <div id="errorContainer"></div>
+
+        <button class="connect-btn" id="connectBtn" onclick="connectToStream()">
+            🚀 Connect to Screen Share
+        </button>
+    </div>
+
+    <div class="viewer-container" id="viewerContainer">
+        <div class="success-message">
+            <span class="status-indicator"></span>
+            <strong>Connected!</strong> Viewing shared screen in real-time
+        </div>
+
+        <div class="stream-container">
+            <img id="screenStream" src="" alt="Screen Share">
+        </div>
+
+        <div class="controls">
+            <div class="quality-control">
+                <label for="qualitySelect">Quality:</label>
+                <select id="qualitySelect" onchange="changeQuality()">
+                    <option value="high">High</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <button class="disconnect-btn" onclick="disconnect()">
+                ❌ Disconnect
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let currentQuality = 'medium';
+        let streamActive = false;
+
+        function generateSessionId() {
+            return 'session_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        function clearError() {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = '';
+        }
+
+        async function connectToStream() {
+            clearError();
+            
+            const connectBtn = document.getElementById('connectBtn');
+            connectBtn.disabled = true;
+            connectBtn.textContent = '🔄 Connecting...';
+
+            try {
+                // Generate session ID
+                sessionId = generateSessionId();
+
+                // Auto-verify in trusted mode (no security code needed)
+                const verifyResponse = await fetch('/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: '',  // No code needed
+                        session: sessionId
+                    })
+                });
+
+                const verifyData = await verifyResponse.json();
+
+                if (verifyData.status === 'authorized') {
+                    // Hide login container, show viewer
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('viewerContainer').style.display = 'block';
+
+                    // Start streaming
+                    startStream();
+                } else {
+                    showError(verifyData.message || 'Connection failed. Please try again.');
+                    connectBtn.disabled = false;
+                    connectBtn.textContent = '🚀 Connect to Screen Share';
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                showError('Failed to connect to server. Please check if the server is running.');
+                connectBtn.disabled = false;
+                connectBtn.textContent = '🚀 Connect to Screen Share';
+            }
+        }
+
+        function startStream() {
+            streamActive = true;
+            const streamImg = document.getElementById('screenStream');
+            const streamUrl = `/stream?session=${sessionId}`;
+            
+            streamImg.src = streamUrl;
+            
+            // Handle stream errors
+            streamImg.onerror = function() {
+                if (streamActive) {
+                    console.error('Stream error, attempting to reconnect...');
+                    setTimeout(() => {
+                        if (streamActive) {
+                            streamImg.src = streamUrl + '&t=' + Date.now();
+                        }
+                    }, 2000);
+                }
+            };
+        }
+
+        async function changeQuality() {
+            const qualitySelect = document.getElementById('qualitySelect');
+            const newQuality = qualitySelect.value;
+
+            try {
+                const response = await fetch('/set_quality', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session: sessionId,
+                        quality: newQuality
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    currentQuality = newQuality;
+                    console.log('Quality changed to:', newQuality);
+                } else {
+                    console.error('Failed to change quality:', data.message);
+                }
+            } catch (error) {
+                console.error('Error changing quality:', error);
+            }
+        }
+
+        function disconnect() {
+            streamActive = false;
+            sessionId = null;
+            
+            // Reset UI
+            document.getElementById('viewerContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+            
+            const connectBtn = document.getElementById('connectBtn');
+            connectBtn.disabled = false;
+            connectBtn.textContent = '🚀 Connect to Screen Share';
+            
+            // Clear stream
+            document.getElementById('screenStream').src = '';
+            
+            clearError();
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            if (streamActive) {
+                disconnect();
+            }
+        });
+
+        // Auto-focus on connect button when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('connectBtn').focus();
+        });
+    </script>
+</body>
+</html>
