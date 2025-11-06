@@ -15,10 +15,14 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 10px;
+            overflow: hidden;
+            margin: 0;
         }
 
         .header {
@@ -43,6 +47,8 @@
             opacity: 0.9;
         }
 
+
+
         .container {
             background: white;
             border-radius: 20px;
@@ -54,12 +60,44 @@
 
         .viewer-container {
             background: white;
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 95vw;
-            width: 100%;
+            width: calc(100vw - 20px);
+            height: calc(100vh - 20px);
+            max-width: 98vw;
+            max-height: 98vh;
             display: none;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .viewer-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* border-radius: 10px; */
+            border-radius: 16px 16px 0px 0px;
+            margin-bottom: 0;
+            color: white;
+            position: relative;
+        }
+
+        .viewer-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            position: absolute;
+            right: 20px;
         }
 
         .info-section {
@@ -129,19 +167,33 @@
             transform: none;
         }
 
+        .loading-stream {
+            padding: 10px;
+            height: 100%;
+        }
+
         .stream-container {
             width: 100%;
+            flex: 1;
             background: #000;
-            border-radius: 10px;
+            border-radius: 0 0 16px 16px;
             overflow: hidden;
-            margin-top: 20px;
             position: relative;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            height: 100%;
         }
 
         #screenStream {
-            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
             height: auto;
             display: block;
+            object-fit: contain;
         }
 
         .controls {
@@ -152,6 +204,7 @@
             padding: 15px;
             background: #f8f9fa;
             border-radius: 10px;
+            display: none;
         }
 
         .quality-control {
@@ -174,21 +227,58 @@
             background: white;
         }
 
+        .quality-btn {
+            padding: 8px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quality-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+            color: white;
+        }
+
+        .fullscreen-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+        }
+
         .disconnect-btn {
             padding: 10px 25px;
             background: #dc3545;
             color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-size: 0.95em;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .disconnect-btn:hover {
             background: #c82333;
-            transform: translateY(-2px);
+            border-color: white;
         }
 
         .status-indicator {
@@ -318,35 +408,45 @@
     </div>
 
     <div class="viewer-container" id="viewerContainer">
-        <div class="success-message">
-            <span class="status-indicator"></span>
-            <strong>Connected!</strong> Viewing shared screen in real-time
+        <div class="viewer-header">
+            <h2>
+                <span>🖥️</span>
+                <span>Screen Share Viewer</span>
+            </h2>
+            <div class="header-controls">
+                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                    F
+                </button>
+                <div style="position: relative;">
+                    <button class="quality-btn" onclick="toggleQualityMenu()">
+                        <span id="currentQuality">High Quality</span>
+                        <span>▼</span>
+                    </button>
+                    <div id="qualityMenu" style="display: none; position: absolute; top: 45px; right: 0; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 150px; z-index: 1000;">
+                        <div onclick="changeQualityFromMenu('high')" style="padding: 12px 20px; cursor: pointer; color: #333; border-bottom: 1px solid #eee;">High</div>
+                        <div onclick="changeQualityFromMenu('medium')" style="padding: 12px 20px; cursor: pointer; color: #333; border-bottom: 1px solid #eee;">Medium</div>
+                        <div onclick="changeQualityFromMenu('low')" style="padding: 12px 20px; cursor: pointer; color: #333;">Low</div>
+                    </div>
+                </div>
+                <button class="disconnect-btn" onclick="disconnect()">
+                    ❌ Disconnect
+                </button>
+            </div>
         </div>
 
+        <div class="loading-stream" id="loadingIndicator">
+        
         <div class="stream-container">
             <img id="screenStream" src="" alt="Screen Share">
         </div>
-
-        <div class="controls">
-            <div class="quality-control">
-                <label for="qualitySelect">Quality:</label>
-                <select id="qualitySelect" onchange="changeQuality()">
-                    <option value="high">High</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="low">Low</option>
-                </select>
-            </div>
-
-            <button class="disconnect-btn" onclick="disconnect()">
-                ❌ Disconnect
-            </button>
         </div>
     </div>
 
     <script>
         let sessionId = null;
-        let currentQuality = 'medium';
+        let currentQuality = 'high';
         let streamActive = false;
+        let qualityMenuOpen = false;
 
         function generateSessionId() {
             return 'session_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
@@ -365,6 +465,66 @@
             const errorContainer = document.getElementById('errorContainer');
             errorContainer.innerHTML = '';
         }
+
+        function toggleQualityMenu() {
+            qualityMenuOpen = !qualityMenuOpen;
+            document.getElementById('qualityMenu').style.display = qualityMenuOpen ? 'block' : 'none';
+        }
+
+        function changeQualityFromMenu(quality) {
+            changeQualityTo(quality);
+            toggleQualityMenu();
+        }
+
+        async function changeQualityTo(newQuality) {
+            try {
+                const response = await fetch('/set_quality', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session: sessionId,
+                        quality: newQuality
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    currentQuality = newQuality;
+                    const qualityText = newQuality.charAt(0).toUpperCase() + newQuality.slice(1) + ' Quality';
+                    document.getElementById('currentQuality').textContent = qualityText;
+                    console.log('Quality changed to:', newQuality);
+                } else {
+                    console.error('Failed to change quality:', data.message);
+                }
+            } catch (error) {
+                console.error('Error changing quality:', error);
+            }
+        }
+
+        function toggleFullscreen() {
+            const streamContainer = document.querySelector('.stream-container');
+            
+            if (!document.fullscreenElement) {
+                streamContainer.requestFullscreen().catch(err => {
+                    console.error('Error attempting to enable fullscreen:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Close quality menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const qualityMenu = document.getElementById('qualityMenu');
+            const qualityBtn = document.querySelector('.quality-btn');
+            
+            if (qualityMenuOpen && !qualityBtn.contains(event.target) && !qualityMenu.contains(event.target)) {
+                toggleQualityMenu();
+            }
+        });
 
         async function connectToStream() {
             clearError();
@@ -392,9 +552,10 @@
                 const verifyData = await verifyResponse.json();
 
                 if (verifyData.status === 'authorized') {
-                    // Hide login container, show viewer
+                    // Hide login container and header, show viewer
                     document.getElementById('loginContainer').style.display = 'none';
-                    document.getElementById('viewerContainer').style.display = 'block';
+                    document.querySelector('.header').style.display = 'none';
+                    document.getElementById('viewerContainer').style.display = 'flex';
 
                     // Start streaming
                     startStream();
@@ -434,30 +595,7 @@
         async function changeQuality() {
             const qualitySelect = document.getElementById('qualitySelect');
             const newQuality = qualitySelect.value;
-
-            try {
-                const response = await fetch('/set_quality', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        session: sessionId,
-                        quality: newQuality
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    currentQuality = newQuality;
-                    console.log('Quality changed to:', newQuality);
-                } else {
-                    console.error('Failed to change quality:', data.message);
-                }
-            } catch (error) {
-                console.error('Error changing quality:', error);
-            }
+            await changeQualityTo(newQuality);
         }
 
         function disconnect() {
