@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Screen Share Viewer - Trusted Mode</title>
     <style>
         * {
@@ -12,740 +12,1469 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 10px;
-            overflow: hidden;
-            margin: 0;
+            align-items: center;
+            padding: 20px;
         }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header .icon {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-
 
         .container {
             background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 600px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
+            overflow: hidden;
+            transition: max-width 0.3s ease;
         }
 
-        .viewer-container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            width: calc(100vw - 20px);
-            height: calc(100vh - 20px);
+        .container.login-mode {
+            max-width: 500px;
+        }
+
+        .container.viewer-mode {
             max-width: 98vw;
             max-height: 98vh;
-            display: none;
-            overflow: hidden;
-            flex-direction: column;
+            width: 98vw;
         }
 
-        .viewer-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px 20px;
+        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            /* border-radius: 10px; */
-            border-radius: 16px 16px 0px 0px;
-            margin-bottom: 0;
             color: white;
+            padding: 15px 20px;
+            text-align: center;
             position: relative;
-        }
-
-        .viewer-header h2 {
-            margin: 0;
-            font-size: 1.3em;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            min-height: 60px;
         }
 
-        .header-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 0;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Header disconnect button (pill style) */
+        .header-disconnect-btn {
             position: absolute;
             right: 20px;
-        }
-
-        .info-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .info-section h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-        }
-
-        .info-section p {
-            color: #666;
-            line-height: 1.6;
-            font-size: 1.1em;
-        }
-
-        .warning-box {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .warning-box strong {
-            color: #856404;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .warning-box p {
-            color: #856404;
-            font-size: 0.95em;
-        }
-
-        .connect-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.2em;
-            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .connect-btn:hover {
+        .header-disconnect-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .connect-btn:active {
+        .header-disconnect-btn:active {
             transform: translateY(0);
         }
 
-        .connect-btn:disabled {
+        /* Fullscreen button (pill style) */
+        .header-fullscreen-btn {
+            position: absolute;
+            right: 340px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            z-index: 1000;
+        }
+
+        .header-fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Quality dropdown (pill style) */
+        .header-quality-dropdown {
+            position: absolute;
+            right: 170px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            height: 40px;
+            z-index: 1000;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .header-quality-dropdown:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-quality-dropdown:active {
+            transform: translateY(0);
+        }
+
+        .header-quality-dropdown select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            text-align: center;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .header-quality-dropdown select option {
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 8px;
+            border: none;
+        }
+
+        .header-quality-dropdown::after {
+            content: '▼';
+            font-size: 10px;
+            margin-left: 4px;
+            opacity: 0.7;
+        }
+
+        /* Draggable fullscreen button in fullscreen mode */
+        .draggable-fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 18px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: move;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            z-index: 10000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+
+        .draggable-fullscreen-btn:hover {
+            background: rgba(118, 75, 162, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .draggable-fullscreen-btn.dragging {
+            cursor: grabbing;
+            transform: scale(1.15);
+        }
+
+        /* Fullscreen mode styles */
+        body.fullscreen-mode {
+            overflow: hidden;
+        }
+
+        .container.fullscreen-active {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            z-index: 9999 !important;
+            background: #000 !important;
+        }
+
+        .container.fullscreen-active .header {
+            display: none !important;
+        }
+
+        .container.fullscreen-active .content {
+            padding: 0 !important;
+            height: 100vh !important;
+            display: block !important;
+        }
+
+        .container.fullscreen-active .login-section {
+            display: none !important;
+        }
+
+        .container.fullscreen-active .viewer-section {
+            display: block !important;
+            height: 100vh !important;
+        }
+
+        .container.fullscreen-active .message {
+            display: none !important;
+        }
+
+        .container.fullscreen-active .screen-viewer {
+            border-radius: 0 !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .container.viewer-mode .content {
+            padding: 10px;
+        }
+
+        .login-section {
+            display: block;
+        }
+
+        .viewer-section {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .code-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            max-width: 65px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .code-digit {
+            width: 55px;
+            height: 65px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            caret-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .code-digit:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: scale(1.05);
+        }
+
+        .code-digit.filled {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            text-transform: uppercase;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
 
-        .loading-stream {
-            padding: 10px;
-            height: 100%;
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
         }
 
-        .stream-container {
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .screen-viewer {
             width: 100%;
-            flex: 1;
             background: #000;
-            border-radius: 16px 16px 16px 16px;
-            overflow: hidden;
+            border-radius: 8px;
+            overflow: auto;
             position: relative;
-            margin: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
-            min-height: 0;
-            height: 100%;
+            align-items: center;
+            min-height: 400px;
+            height: calc(100vh - 140px);
+            max-height: calc(100vh - 140px);
+            cursor: zoom-in;
         }
 
-        #screenStream {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
+        .screen-viewer.zoomed {
+            cursor: zoom-out;
+            overflow: auto;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        #screenImage {
+            width: 100%;
+            height: 100%;
             display: block;
             object-fit: contain;
+            transition: transform 0.3s ease;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            display: none;
-        }
-
-        .quality-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quality-control label {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .quality-control select {
-            padding: 8px 15px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            background: white;
-        }
-
-        .quality-btn {
-            padding: 8px 20px;
-            background: white;
-            color: #667eea;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 20px;
-            font-size: 0.95em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .quality-btn:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: white;
-            color: white;
-        }
-
-        .fullscreen-btn {
-            padding: 8px 16px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 20px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-btn:hover {
-            background: rgba(255,255,255,0.3);
-            border-color: white;
-        }
-
-        .disconnect-btn {
-            padding: 10px 25px;
-            background: #dc3545;
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 20px;
-            font-size: 0.95em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .disconnect-btn:hover {
-            background: #c82333;
-            border-color: white;
-        }
-
-        .quality-menu {
-            display: none;
-            position: absolute;
-            top: 45px;
-            right: 0;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            min-width: 150px;
-            z-index: 1000;
-            overflow: hidden;
-        }
-
-        .quality-menu-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            color: #333;
-            border-bottom: 1px solid #eee;
-            transition: all 0.2s ease;
-        }
-
-        .quality-menu-item:last-child {
-            border-bottom: none;
-        }
-
-        .quality-menu-item:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background: #28a745;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
+        .screen-viewer.zoomed #screenImage {
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            object-fit: none;
+            cursor: move;
         }
 
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #667eea;
-            font-size: 1.2em;
+            padding: 40px;
+            color: #666;
         }
 
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-            text-align: center;
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
 
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
-            text-align: center;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .feature-list {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0;
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+            pointer-events: none;
         }
 
-        .feature-list li {
-            padding: 10px;
-            margin: 5px 0;
-            background: #f8f9fa;
-            border-radius: 8px;
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            pointer-events: auto;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid #667eea;
         }
 
-        .feature-list li::before {
-            content: "✓";
-            color: #28a745;
-            font-weight: bold;
-            margin-right: 10px;
-            font-size: 1.3em;
+        .toast.removing {
+            animation: slideOut 0.3s ease-out forwards;
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
-                overflow-y: auto;
-                overflow-x: hidden;
-                height: auto;
-                min-height: 100vh;
-                margin: 0px 20px;
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
             }
-
-            .header {
-                margin-bottom: 15px;
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
+        }
 
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .toast.info {
+            border-left-color: #3498db;
+        }
+
+        .toast.success {
+            border-left-color: #2ecc71;
+        }
+
+        .toast.warning {
+            border-left-color: #f39c12;
+        }
+
+        .toast.error {
+            border-left-color: #e74c3c;
+        }
+
+        .toast.loading {
+            border-left-color: #667eea;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0 0 0 12px;
+            animation: progressBar 5s linear forwards;
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        .controls {
+            display: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        /* Hide status indicator - using toast notifications instead */
+        .status {
+            display: none;
+        }
+
+        /* Social Links - Glassmorphism Pills */
+        .social-links {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-link:active {
+            transform: translateY(-1px);
+        }
+
+        .social-link-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Hide social links in viewer mode */
+        .container.viewer-mode .social-links {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
             .header h1 {
-                font-size: 1.8em;
+                font-size: 22px;
             }
-
-            .header .icon {
-                font-size: 2.5em;
-                margin-bottom: 5px;
-            }
-
-            .header p {
-                font-size: 0.95em;
-            }
-
-            .container {
+            
+            .content {
                 padding: 20px;
-                margin: 10px 0;
-                max-width: 100%;
             }
-
-            .info-section h2 {
-                font-size: 1.5em;
-            }
-
-            .info-section p {
-                font-size: 0.95em;
-            }
-
-            .warning-box {
-                padding: 12px;
-                font-size: 0.9em;
-            }
-
-            .feature-list li {
-                font-size: 0.9em;
-                padding: 8px;
-            }
-
-            .connect-btn {
-                padding: 12px 20px;
-                font-size: 1em;
-            }
-
-            .viewer-container {
-                width: 100vw;
-                height: 100vh;
-                max-width: 100vw;
-                max-height: 100vh;
-                border-radius: 0;
-                margin: 0;
-            }
-
-            .viewer-header {
-                padding: 10px 15px;
-                border-radius: 0;
-            }
-
-            .viewer-header h2 {
-                font-size: 1em;
-            }
-
-            .header-controls {
-                gap: 8px;
-                right: 10px;
-            }
-
-            .fullscreen-btn {
-                padding: 6px 12px;
-                font-size: 0.95em;
-            }
-
-            .quality-btn {
-                padding: 6px 15px;
-                font-size: 0.85em;
-            }
-
-            .disconnect-btn {
-                padding: 6px 15px;
-                font-size: 0.85em;
-            }
-
-            .stream-container {
-                border-radius: 8px;
-            }
-
+            
             .controls {
-                flex-direction: column;
-                gap: 15px;
+                flex-direction: row;
             }
 
-            .quality-control {
+            .controls .btn {
+                min-width: 120px;
+                font-size: 14px;
+            }
+
+            .header-disconnect-btn {
+                position: static;
+                margin-top: 15px;
                 width: 100%;
                 justify-content: center;
             }
 
-            .disconnect-btn {
+            .header-fullscreen-btn {
+                position: static;
+                margin-top: 15px;
+                margin-right: 10px;
+                width: auto;
+            }
+
+            .header-quality-dropdown {
+                position: static;
+                margin-top: 15px;
+                margin-right: 10px;
+                min-width: 100px;
+                width: auto;
+            }
+
+            .header {
+                flex-direction: column;
+            }
+
+            .code-digit {
+                width: 45px;
+                height: 55px;
+                font-size: 22px;
+            }
+
+            .code-input-container {
+                gap: 6px;
+                max-width: 45px;
+            }
+
+            .container.viewer-mode {
+                max-width: 100vw;
+                max-height: 100vh;
+            }
+
+            .screen-viewer {
+                height: calc(100vh - 240px);
+                max-height: calc(100vh - 240px);
+                min-height: 300px;
+            }
+
+            .social-links {
+                bottom: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .social-link {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .code-digit {
+                width: 40px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .code-input-container {
+                gap: 4px;
+            }
+
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .toast {
+                min-width: auto;
                 width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="icon">🖥️</div>
-        <h1>Screen Share Viewer</h1>
-        <p>Trusted Mode - No Security Code Required</p>
-    </div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-    <div class="container" id="loginContainer">
-        <div class="info-section">
-            <h2>Connect to Screen Share</h2>
-            <p>You are connecting in trusted mode. No security code is required.</p>
+    <!-- Draggable Fullscreen Exit Button -->
+    <button class="draggable-fullscreen-btn" id="draggableFullscreenBtn" title="Exit Fullscreen">F</button>
+
+    <div class="container login-mode" id="mainContainer">
+        <div class="header" id="headerElement">
+            <div>
+                <h1>🖥️ Screen Share Viewer</h1>
+                <p id="headerDescription">Trusted Mode - No Security Code Required</p>
+            </div>
+            <button class="header-fullscreen-btn" id="headerFullscreenBtn" style="display: none;" title="Fullscreen">
+                F
+            </button>
+            <div class="header-quality-dropdown" id="headerQualityDropdown" style="display: none;" title="Stream Quality">
+                <select id="qualitySelect">
+                    <option value="high">High Quality</option>
+                    <option value="medium" selected>Medium Quality</option>
+                    <option value="low">Low Quality</option>
+                </select>
+            </div>
+            <button class="header-disconnect-btn" id="headerDisconnectBtn" style="display: none;">
+                <span>●</span> Disconnect
+            </button>
         </div>
 
-        <div class="warning-box">
-            <strong>⚠️ Trusted Mode</strong>
-            <p>This connection does not require a security code. The host will approve your connection request.</p>
-        </div>
-
-        <ul class="feature-list">
-            <li>Real-time screen sharing</li>
-            <li>Adjustable quality settings</li>
-            <li>Host approval required</li>
-            <li>Multi-user support</li>
-        </ul>
-
-        <div id="errorContainer"></div>
-
-        <button class="connect-btn" id="connectBtn" onclick="connectToStream()">
-            🚀 Connect to Screen Share
-        </button>
-    </div>
-
-    <div class="viewer-container" id="viewerContainer">
-        <div class="viewer-header">
-            <h2>
-                <span>🖥️</span>
-                <span>Screen Share Viewer</span>
-            </h2>
-            <div class="header-controls">
-                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">
-                    F
-                </button>
-                <div style="position: relative;">
-                    <button class="quality-btn" onclick="toggleQualityMenu()">
-                        <span id="currentQuality">High Quality</span>
-                        <span>▼</span>
+        <div class="content">
+            <!-- Login Section -->
+            <div class="login-section" id="loginSection">
+                <div class="message" id="loginMessage"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Click below to connect to the screen share</label>
+                    </div>
+                    <button type="submit" class="btn" id="connectBtn">
+                        🚀 Connect to Screen Share
                     </button>
-                    <div id="qualityMenu" class="quality-menu">
-                        <div class="quality-menu-item" onclick="changeQualityFromMenu('high')">High</div>
-                        <div class="quality-menu-item" onclick="changeQualityFromMenu('medium')">Medium</div>
-                        <div class="quality-menu-item" onclick="changeQualityFromMenu('low')">Low</div>
+                </form>
+
+                <!-- Social Links - Glassmorphism Pills -->
+                <div class="social-links">
+                    <a href="https://www.bibekchandsah.com.np/" target="_blank" rel="noopener noreferrer" class="social-link" title="Visit Developer Website">
+                        <span class="social-link-icon">👨‍💻</span>
+                        <span>Developer</span>
+                    </a>
+                    <a href="https://github.com/bibekchandsah/screenshare" target="_blank" rel="noopener noreferrer" class="social-link" title="Contribute on GitHub">
+                        <span class="social-link-icon">⭐</span>
+                        <span>Contribute</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Viewer Section -->
+            <div class="viewer-section" id="viewerSection">
+                <div class="message" id="viewerMessage"></div>
+                
+                <div class="screen-viewer">
+                    <img id="screenImage" alt="Shared Screen" style="display: none;">
+                    <div class="loading" id="loadingIndicator">
+                        <div class="spinner"></div>
+                        <p>Connecting to screen share...</p>
                     </div>
                 </div>
-                <button class="disconnect-btn" onclick="disconnect()">
-                    ❌ Disconnect
-                </button>
-            </div>
-        </div>
 
-        <div class="loading-stream" id="loadingIndicator">
-        
-        <div class="stream-container">
-            <img id="screenStream" src="" alt="Screen Share">
-        </div>
+                <div class="status connected" id="connectionStatus">
+                    🟢 Connected - Viewing Screen
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-danger" id="disconnectBtn">
+                        Disconnect
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let sessionId = null;
-        let currentQuality = 'high';
-        let streamActive = false;
-        let qualityMenuOpen = false;
+        let isConnected = false;
+        let connectionCheckInterval = null;
 
-        function generateSessionId() {
-            return 'session_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-        }
+        const mainContainer = document.getElementById('mainContainer');
+        const loginSection = document.getElementById('loginSection');
+        const viewerSection = document.getElementById('viewerSection');
+        const loginForm = document.getElementById('loginForm');
+        const connectBtn = document.getElementById('connectBtn');
+        const loginMessage = document.getElementById('loginMessage');
+        const viewerMessage = document.getElementById('viewerMessage');
+        const screenImage = document.getElementById('screenImage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const headerDisconnectBtn = document.getElementById('headerDisconnectBtn');
+        const headerFullscreenBtn = document.getElementById('headerFullscreenBtn');
+        const headerQualityDropdown = document.getElementById('headerQualityDropdown');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const draggableFullscreenBtn = document.getElementById('draggableFullscreenBtn');
+        const headerDescription = document.getElementById('headerDescription');
+        const toastContainer = document.getElementById('toastContainer');
+        
+        // Generate session ID
+        sessionId = 'session_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 
-        function showError(message) {
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.innerHTML = `
-                <div class="error-message">
-                    <strong>Error:</strong> ${message}
+        // Toast Notification System
+        function showToast(type, title, message, duration = 5000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                warning: '⚠️',
+                error: '❌',
+                loading: '⏳'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
                 </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+                ${duration > 0 ? '<div class="toast-progress"></div>' : ''}
             `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+            
+            return toast;
         }
 
-        function clearError() {
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.innerHTML = '';
+        // Show toast with custom timeout progress bar
+        function showToastWithTimeout(type, title, message, timeoutSeconds) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                warning: '⚠️',
+                error: '❌',
+                loading: '⏳'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+                <div class="toast-progress" style="animation: progressBar ${timeoutSeconds}s linear forwards;"></div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            return toast;
         }
 
-        function toggleQualityMenu() {
-            qualityMenuOpen = !qualityMenuOpen;
-            document.getElementById('qualityMenu').style.display = qualityMenuOpen ? 'block' : 'none';
+        // Show message
+        function showMessage(element, type, text) {
+            element.className = `message ${type}`;
+            element.textContent = text;
+            element.style.display = 'block';
+            
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
         }
 
-        function changeQualityFromMenu(quality) {
-            changeQualityTo(quality);
-            toggleQualityMenu();
+        // Hide message
+        function hideMessage(element) {
+            element.style.display = 'none';
         }
 
-        async function changeQualityTo(newQuality) {
+        // Connect to server (Trusted Mode - No Security Code)
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            connectBtn.disabled = true;
+            connectBtn.textContent = 'Connecting...';
+            hideMessage(loginMessage);
+            
+            // Show connecting toast
+            const loadingToast = showToast('loading', 'Connecting...', 'Establishing connection in trusted mode...', 0);
+
             try {
-                const response = await fetch('/set_quality', {
+                const response = await fetch('/verify', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': '1'
                     },
-                    body: JSON.stringify({
-                        session: sessionId,
-                        quality: newQuality
+                    body: JSON.stringify({ 
+                        session: sessionId
                     })
                 });
 
                 const data = await response.json();
 
-                if (data.status === 'success') {
-                    currentQuality = newQuality;
-                    const qualityText = newQuality.charAt(0).toUpperCase() + newQuality.slice(1) + ' Quality';
-                    document.getElementById('currentQuality').textContent = qualityText;
-                    console.log('Quality changed to:', newQuality);
+                // Remove loading toast
+                loadingToast.classList.add('removing');
+                setTimeout(() => loadingToast.remove(), 300);
+
+                if (data.status === 'authorized') {
+                    sessionId = data.session;
+                    isConnected = true;
+                    showToast('success', 'Connected! 🎉', 'Successfully connected in trusted mode', 3000);
+                    startViewing();
                 } else {
-                    console.error('Failed to change quality:', data.message);
-                }
-            } catch (error) {
-                console.error('Error changing quality:', error);
-            }
-        }
-
-        function toggleFullscreen() {
-            const streamContainer = document.querySelector('.stream-container');
-            
-            if (!document.fullscreenElement) {
-                streamContainer.requestFullscreen().catch(err => {
-                    console.error('Error attempting to enable fullscreen:', err);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        // Close quality menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const qualityMenu = document.getElementById('qualityMenu');
-            const qualityBtn = document.querySelector('.quality-btn');
-            
-            if (qualityMenuOpen && !qualityBtn.contains(event.target) && !qualityMenu.contains(event.target)) {
-                toggleQualityMenu();
-            }
-        });
-
-        async function connectToStream() {
-            clearError();
-            
-            const connectBtn = document.getElementById('connectBtn');
-            connectBtn.disabled = true;
-            connectBtn.textContent = '🔄 Connecting...';
-
-            try {
-                // Generate session ID
-                sessionId = generateSessionId();
-
-                // Auto-verify in trusted mode (no security code needed)
-                const verifyResponse = await fetch('/verify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        code: '',  // No code needed
-                        session: sessionId
-                    })
-                });
-
-                const verifyData = await verifyResponse.json();
-
-                if (verifyData.status === 'authorized') {
-                    // Hide login container and header, show viewer
-                    document.getElementById('loginContainer').style.display = 'none';
-                    document.querySelector('.header').style.display = 'none';
-                    document.getElementById('viewerContainer').style.display = 'flex';
-
-                    // Start streaming
-                    startStream();
-                } else {
-                    showError(verifyData.message || 'Connection failed. Please try again.');
+                    showMessage(loginMessage, 'error', data.message || 'Connection failed');
+                    showToast('error', 'Connection Failed', data.message || 'Unable to connect to the server.');
                     connectBtn.disabled = false;
                     connectBtn.textContent = '🚀 Connect to Screen Share';
                 }
             } catch (error) {
-                console.error('Connection error:', error);
-                showError('Failed to connect to server. Please check if the server is running.');
+                // Remove loading toast
+                if (loadingToast && loadingToast.parentElement) {
+                    loadingToast.classList.add('removing');
+                    setTimeout(() => loadingToast.remove(), 300);
+                }
+                
+                showMessage(loginMessage, 'error', 'Network error. Please check your connection.');
+                showToast('error', 'Network Error', 'Unable to reach the server. Please check your connection.');
                 connectBtn.disabled = false;
                 connectBtn.textContent = '🚀 Connect to Screen Share';
             }
-        }
+        });
 
-        function startStream() {
-            streamActive = true;
-            const streamImg = document.getElementById('screenStream');
-            const streamUrl = `/stream?session=${sessionId}`;
+        // Start viewing screen
+        function startViewing() {
+            // Switch to viewer mode
+            mainContainer.classList.remove('login-mode');
+            mainContainer.classList.add('viewer-mode');
             
-            streamImg.src = streamUrl;
+            loginSection.style.display = 'none';
+            viewerSection.style.display = 'block';
+            isConnected = true;
+
+            // Update header - hide description, show controls
+            headerDescription.style.display = 'none';
+            headerDisconnectBtn.style.display = 'flex';
+            headerQualityDropdown.style.display = 'flex';
+            headerFullscreenBtn.style.display = 'flex';
+
+            showToast('info', 'Loading Stream...', 'Initializing screen share connection...', 3000);
+
+            // Build stream URL with session ID as query parameter
+            const streamUrl = `/stream?session=${sessionId}&_=${Date.now()}`;
             
-            // Handle stream errors
-            streamImg.onerror = function() {
-                if (streamActive) {
-                    console.error('Stream error, attempting to reconnect...');
-                    setTimeout(() => {
-                        if (streamActive) {
-                            streamImg.src = streamUrl + '&t=' + Date.now();
-                        }
-                    }, 2000);
-                }
+            screenImage.onload = function() {
+                if (!isConnected) return; // Don't show success if disconnected
+                loadingIndicator.style.display = 'none';
+                screenImage.style.display = 'block';
+                showToast('success', 'Screen Sharing Active', 'You are now viewing the shared screen in real-time! Click to zoom.', 4000);
+                
+                // Start connection check
+                startConnectionCheck();
+                
+                // Enable zoom functionality
+                enableZoom();
             };
+
+            screenImage.onerror = function() {
+                if (!isConnected) return; // Don't show errors if already disconnected
+                showMessage(viewerMessage, 'error', 'Connection lost. Please refresh the page.');
+                isConnected = false;
+                loadingIndicator.style.display = 'none';
+                showToast('error', 'Connection Lost', 'The screen sharing connection has been interrupted. Please reconnect.', 0);
+                
+                // Stop connection check
+                stopConnectionCheck();
+            };
+
+            // Set image source - browser will handle MJPEG stream automatically
+            screenImage.src = streamUrl;
         }
 
-        async function changeQuality() {
-            const qualitySelect = document.getElementById('qualitySelect');
-            const newQuality = qualitySelect.value;
-            await changeQualityTo(newQuality);
+        // Zoom functionality
+        function enableZoom() {
+            const screenViewer = document.querySelector('.screen-viewer');
+            let isZoomed = false;
+            let isDragging = false;
+            let startX, startY, scrollLeft, scrollTop;
+
+            screenViewer.addEventListener('click', function(e) {
+                if (isDragging) return;
+                
+                // Get click position relative to the viewer before toggling zoom
+                const rect = screenViewer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                // Calculate the relative position (0 to 1) of the click within the viewer
+                const relativeX = clickX / rect.width;
+                const relativeY = clickY / rect.height;
+                
+                isZoomed = !isZoomed;
+                screenViewer.classList.toggle('zoomed', isZoomed);
+                
+                if (isZoomed) {
+                    // Wait for the zoom transition to complete, then scroll to clicked point
+                    setTimeout(() => {
+                        // Calculate the new scroll position to center the clicked point
+                        const newScrollLeft = (screenViewer.scrollWidth * relativeX) - (rect.width / 2);
+                        const newScrollTop = (screenViewer.scrollHeight * relativeY) - (rect.height / 2);
+                        
+                        screenViewer.scrollLeft = Math.max(0, newScrollLeft);
+                        screenViewer.scrollTop = Math.max(0, newScrollTop);
+                    }, 50);
+                    
+                    showToast('info', 'Zoomed In', 'Drag to pan around. Click again to zoom out.', 3000);
+                } else {
+                    showToast('info', 'Zoomed Out', 'Click to zoom in again.', 2000);
+                }
+            });
+
+            // Pan functionality when zoomed
+            screenImage.addEventListener('mousedown', function(e) {
+                if (!isZoomed) return;
+                isDragging = true;
+                startX = e.pageX - screenViewer.offsetLeft;
+                startY = e.pageY - screenViewer.offsetTop;
+                scrollLeft = screenViewer.scrollLeft;
+                scrollTop = screenViewer.scrollTop;
+                screenImage.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            screenViewer.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - screenViewer.offsetLeft;
+                const y = e.pageY - screenViewer.offsetTop;
+                const walkX = (x - startX) * 2;
+                const walkY = (y - startY) * 2;
+                screenViewer.scrollLeft = scrollLeft - walkX;
+                screenViewer.scrollTop = scrollTop - walkY;
+            });
+
+            screenViewer.addEventListener('mouseup', function() {
+                isDragging = false;
+                if (isZoomed) {
+                    screenImage.style.cursor = 'move';
+                }
+            });
+
+            screenViewer.addEventListener('mouseleave', function() {
+                isDragging = false;
+            });
         }
 
-        function disconnect() {
-            streamActive = false;
-            sessionId = null;
+        // Fullscreen functionality
+        let isFullscreen = false;
+
+        // Double-click on header button to toggle fullscreen
+        headerFullscreenBtn.addEventListener('dblclick', toggleFullscreen);
+        
+        // Single click removed, now only double-click works
+        // draggableFullscreenBtn click is handled in mouseup event below
+
+        // Quality change handler
+        qualitySelect.addEventListener('change', function(e) {
+            const quality = e.target.value;
+            handleQualityChange(quality);
+        });
+
+        // Handle quality changes
+        function handleQualityChange(quality) {
+            if (!isConnected || !sessionId) {
+                console.error('Cannot change quality: not connected or no session');
+                return;
+            }
             
-            // Reset UI
-            document.getElementById('viewerContainer').style.display = 'none';
-            document.getElementById('loginContainer').style.display = 'block';
+            const qualityNames = {
+                'high': 'High Quality',
+                'medium': 'Medium Quality', 
+                'low': 'Low Quality'
+            };
             
-            const connectBtn = document.getElementById('connectBtn');
-            connectBtn.disabled = false;
-            connectBtn.textContent = '🚀 Connect to Screen Share';
+            console.log(`Changing quality to: ${quality}`);
+            showToast('info', 'Quality Changed', `Switching to ${qualityNames[quality]}...`, 3000);
             
-            // Clear stream
-            document.getElementById('screenStream').src = '';
-            
-            clearError();
+            // Send quality change request to server
+            fetch('/set_quality', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session: sessionId,
+                    quality: quality
+                })
+            }).then(response => {
+                if (response.ok) {
+                    showToast('success', 'Quality Updated', `Stream quality set to ${qualityNames[quality]}`, 3000);
+                    
+                    // Force refresh the stream with new quality - improved method
+                    refreshStream();
+                } else {
+                    showToast('warning', 'Quality Change Failed', 'Could not change stream quality. Using current quality.', 4000);
+                }
+            }).catch(error => {
+                console.error('Quality change error:', error);
+                showToast('warning', 'Quality Change Failed', 'Could not change stream quality. Using current quality.', 4000);
+            });
         }
 
-        // Handle page unload
-        window.addEventListener('beforeunload', function() {
-            if (streamActive) {
+        // Improved stream refresh function
+        function refreshStream() {
+            // Check if we're still connected and have a valid session
+            if (!sessionId || !isConnected) {
+                console.log('Refresh cancelled: not connected or no session');
+                return;
+            }
+            
+            console.log('Refreshing stream after quality change...');
+            
+            // Stop current stream completely
+            screenImage.src = '';
+            screenImage.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            
+            // Clear any existing load handlers
+            screenImage.onload = null;
+            screenImage.onerror = null;
+            
+            // Wait for server to process quality change
+            setTimeout(() => {
+                // Double-check connection state before proceeding
+                if (!sessionId || !isConnected) {
+                    console.log('Refresh cancelled: disconnected during timeout');
+                    return;
+                }
+                
+                // Build new stream URL with multiple cache-busting parameters
+                const timestamp = Date.now();
+                const random = Math.random().toString(36).substring(7);
+                const streamUrl = `/stream?session=${sessionId}&_=${timestamp}&r=${random}&quality_refresh=1`;
+                
+                console.log('Starting new stream:', streamUrl);
+                
+                // Set up fresh load handlers with connection checks
+                screenImage.onload = function() {
+                    if (!isConnected) return; // Don't show success if disconnected
+                    console.log('Stream refreshed successfully');
+                    loadingIndicator.style.display = 'none';
+                    screenImage.style.display = 'block';
+                    showToast('info', 'Stream Refreshed', 'Quality change applied successfully', 2000);
+                };
+                
+                screenImage.onerror = function() {
+                    if (!isConnected) return; // Don't show errors if disconnected
+                    console.error('Stream refresh failed');
+                    showToast('warning', 'Stream Refresh Failed', 'Could not refresh stream. Please try again.', 3000);
+                    loadingIndicator.style.display = 'none';
+                    screenImage.style.display = 'block';
+                    
+                    // Try to restore original stream after error (only if still connected)
+                    setTimeout(() => {
+                        if (!sessionId || !isConnected) return;
+                        const fallbackUrl = `/stream?session=${sessionId}&_=${Date.now()}`;
+                        screenImage.src = fallbackUrl;
+                    }, 1000);
+                };
+                
+                // Start new stream
+                screenImage.src = streamUrl;
+            }, 1000); // Longer delay to ensure server quality change is processed
+        }
+
+        function toggleFullscreen() {
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                // Enter fullscreen
+                document.body.classList.add('fullscreen-mode');
+                mainContainer.classList.add('fullscreen-active');
+                draggableFullscreenBtn.style.display = 'flex';
+                showToast('info', 'Fullscreen Mode', 'Press F or Esc to exit. Double-click F button to exit.', 3000);
+            } else {
+                // Exit fullscreen
+                document.body.classList.remove('fullscreen-mode');
+                mainContainer.classList.remove('fullscreen-active');
+                draggableFullscreenBtn.style.display = 'none';
+                showToast('info', 'Normal Mode', 'Exited fullscreen mode.', 2000);
+            }
+        }
+
+        // Keyboard shortcuts for fullscreen
+        document.addEventListener('keydown', function(e) {
+            // F key to toggle fullscreen (only when connected and viewing)
+            if (e.key === 'f' || e.key === 'F') {
+                if (isConnected && !loginSection.style.display.includes('block')) {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            }
+            // Esc key to exit fullscreen
+            else if (e.key === 'Escape' && isFullscreen) {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+        });
+
+        // Make fullscreen button draggable
+        let isDraggingBtn = false;
+        let btnOffsetX, btnOffsetY;
+        let hasMoved = false;
+
+        draggableFullscreenBtn.addEventListener('mousedown', function(e) {
+            isDraggingBtn = true;
+            hasMoved = false;
+            btnOffsetX = e.clientX - draggableFullscreenBtn.offsetLeft;
+            btnOffsetY = e.clientY - draggableFullscreenBtn.offsetTop;
+            draggableFullscreenBtn.classList.add('dragging');
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDraggingBtn) return;
+            
+            hasMoved = true;
+            const x = e.clientX - btnOffsetX;
+            const y = e.clientY - btnOffsetY;
+            
+            // Keep button within viewport
+            const maxX = window.innerWidth - draggableFullscreenBtn.offsetWidth;
+            const maxY = window.innerHeight - draggableFullscreenBtn.offsetHeight;
+            
+            draggableFullscreenBtn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            draggableFullscreenBtn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+            draggableFullscreenBtn.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isDraggingBtn) {
+                isDraggingBtn = false;
+                draggableFullscreenBtn.classList.remove('dragging');
+            }
+        });
+
+        // Double-click on draggable button to toggle fullscreen
+        draggableFullscreenBtn.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            toggleFullscreen();
+        });
+
+        // Connection health check
+        function startConnectionCheck() {
+            // Clear any existing interval
+            stopConnectionCheck();
+            
+            // Check connection every 3 seconds
+            connectionCheckInterval = setInterval(async () => {
+                if (!isConnected || !sessionId) {
+                    stopConnectionCheck();
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/health', {
+                        method: 'GET',
+                        cache: 'no-cache',
+                        headers: {
+                            'ngrok-skip-browser-warning': '1'  // Bypass ngrok warning page
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        // Server is down
+                        handleServerDisconnect();
+                    } else {
+                        const data = await response.json();
+                        if (!data.sharing) {
+                            // Server stopped sharing
+                            handleServerDisconnect();
+                        }
+                    }
+                } catch (error) {
+                    // Network error or server unreachable
+                    handleServerDisconnect();
+                }
+            }, 3000);
+        }
+
+        function stopConnectionCheck() {
+            if (connectionCheckInterval) {
+                clearInterval(connectionCheckInterval);
+                connectionCheckInterval = null;
+            }
+        }
+
+        function handleServerDisconnect() {
+            if (!isConnected) return; // Already handled
+            
+            stopConnectionCheck();
+            
+            showMessage(viewerMessage, 'error', 'Server disconnected. Please refresh the page.');
+            isConnected = false;
+            
+            screenImage.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            loadingIndicator.querySelector('p').textContent = 'Server disconnected';
+            
+            showToast('error', 'Server Disconnected', 'The server has been closed. You have been disconnected.', 0);
+        }
+
+        // Disconnect - handle both buttons
+        disconnectBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to disconnect?')) {
+                showToast('info', 'Disconnecting...', 'Closing screen share connection...', 3000);
                 disconnect();
             }
         });
 
-        // Auto-focus on connect button when page loads
-        window.addEventListener('load', function() {
-            document.getElementById('connectBtn').focus();
+        headerDisconnectBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to disconnect?')) {
+                showToast('info', 'Disconnecting...', 'Closing screen share connection...', 3000);
+                disconnect();
+            }
         });
+
+        function disconnect() {
+            // Set disconnection state first to prevent any refresh attempts
+            isConnected = false;
+            sessionId = null;
+            
+            console.log('Disconnecting - clearing all handlers and streams');
+            
+            // Stop connection check
+            stopConnectionCheck();
+            
+            // Immediately clear all image handlers to prevent error events
+            screenImage.onload = null;
+            screenImage.onerror = null;
+            screenImage.src = '';
+            screenImage.style.display = 'none';
+            
+            // Switch back to login mode
+            mainContainer.classList.remove('viewer-mode');
+            mainContainer.classList.add('login-mode');
+            
+            viewerSection.style.display = 'none';
+            loginSection.style.display = 'block';
+
+            // Reset header
+            headerDescription.style.display = 'block';
+            headerDisconnectBtn.style.display = 'none';
+            headerQualityDropdown.style.display = 'none';
+            headerFullscreenBtn.style.display = 'none';
+            
+            // Exit fullscreen if active
+            if (isFullscreen) {
+                document.body.classList.remove('fullscreen-mode');
+                mainContainer.classList.remove('fullscreen-active');
+                draggableFullscreenBtn.style.display = 'none';
+                isFullscreen = false;
+            }
+            
+            loadingIndicator.style.display = 'block';
+            
+            clearSecurityCode();
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect to Screen Share';
+            
+            hideMessage(loginMessage);
+            hideMessage(viewerMessage);
+            
+            showToast('success', 'Disconnected', 'You have been disconnected from the screen share.', 3000);
+        }
     </script>
 </body>
 </html>
