@@ -204,16 +204,18 @@ def main_menu():
         print("  [3] View Someone's Screen (Desktop App)")
         print("  [4] Start Cloudflare Tunnel (Unlimited Bandwidth)")
         print("  [5] Share My Screen via Cloudflare Tunnel (Merged)")
-        print("  [6] Start ngrok Tunnel (For Internet Access)")
-        print("  [7] Check ngrok Status")
-        print("  [8] Setup ngrok Authtoken")
-        print("  [9] Exit")
+        print("  [6] Share My Screen (Trusted Mode - No Security Code)")
+        print("  [7] Share My Screen Trusted Mode via Cloudflare Tunnel (Merged)")
+        print("  [8] Start ngrok Tunnel (For Internet Access)")
+        print("  [9] Check ngrok Status")
+        print("  [10] Setup ngrok Authtoken")
+        print("  [11] Exit")
         print()
         print("-" * 60)
         print(" " * 39, end="𝓓𝓮𝓿𝓮𝓵𝓸𝓹𝓮𝓭 𝓫𝔂 𝓑𝓲𝓫𝓮𝓴...")
         print()
         
-        choice = input("\nEnter your choice (1-9): ").strip()
+        choice = input("\nEnter your choice (1-11): ").strip()
         
         if choice == '1':
             return 'server'
@@ -226,12 +228,16 @@ def main_menu():
         elif choice == '5':
             return 'cloudflare_merged'
         elif choice == '6':
-            return 'ngrok'
+            return 'web_server_trusted'
         elif choice == '7':
-            return 'ngrok_status'
+            return 'cloudflare_trusted_merged'
         elif choice == '8':
-            return 'ngrok_authtoken'
+            return 'ngrok'
         elif choice == '9':
+            return 'ngrok_status'
+        elif choice == '10':
+            return 'ngrok_authtoken'
+        elif choice == '11':
             # Confirm before exiting
             print()
             confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
@@ -240,7 +246,7 @@ def main_menu():
                 sys.exit(0)
             # If 'no', loop continues and menu is shown again
         else:
-            print("\n❌ Invalid choice! Please enter 1-9.")
+            print("\n❌ Invalid choice! Please enter 1-11.")
             input("Press Enter to continue...")
 
 def run_server():
@@ -349,6 +355,37 @@ def run_web_server():
     except ImportError as e:
         print(f"❌ Error: Could not import web server module - {e}")
         print("Make sure web_server.py exists in the same directory.")
+        input("\nPress Enter to return to main menu...")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        input("\nPress Enter to return to main menu...")
+
+def run_web_server_trusted():
+    """Run the trusted web server (browser-based screen sharing without security code)"""
+    clear_screen()
+    print_banner()
+    print("🌐 TRUSTED WEB BROWSER SCREEN SHARE MODE")
+    print("=" * 60)
+    print()
+    
+    try:
+        # Import and run trusted web server
+        from web_server_trusted import TrustedScreenShareWebServer
+        
+        server = TrustedScreenShareWebServer()
+        print("⚠️  TRUSTED MODE - No security code required!")
+        print("[*] All connections will be automatically accepted")
+        print("[*] This mode is mobile-friendly!")
+        print("[*] You can view the screen from any device with a web browser")
+        print("[*] 📝 Connection details will be logged for your reference\n")
+        server.start_sharing()
+        
+    except KeyboardInterrupt:
+        print("\n\n[!] Trusted web server stopped by user")
+        input("\nPress Enter to return to main menu...")
+    except ImportError as e:
+        print(f"❌ Error: Could not import trusted web server module - {e}")
+        print("Make sure web_server_trusted.py exists in the same directory.")
         input("\nPress Enter to return to main menu...")
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -553,6 +590,137 @@ def run_cloudflare_merged():
     except ImportError as e:
         print(f"❌ Error: Could not import required modules - {e}")
         print("Make sure web_server.py and cloudflare_helper.py exist in the same directory.")
+        input("\nPress Enter to return to main menu...")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        input("\nPress Enter to return to main menu...")
+
+def run_cloudflare_trusted_merged():
+    """Run Cloudflare tunnel and then start trusted web server in the same terminal"""
+    clear_screen()
+    print_banner()
+    print("🌐 CLOUDFLARE TUNNEL + TRUSTED SCREEN SHARE (MERGED)")
+    print("=" * 60)
+    print()
+    
+    try:
+        # Import required modules
+        import subprocess
+        import threading
+        import time
+        import sys
+        import os
+        from web_server_trusted import TrustedScreenShareWebServer
+        
+        # Step 1: Start Cloudflare tunnel for Web Mode (port 5000)
+        print("🚀 STEP 1: Starting Cloudflare Tunnel...")
+        print("=" * 50)
+        print()
+        
+        # When running as PyInstaller executable, check the temporary directory
+        if getattr(sys, 'frozen', False):
+            # Running as executable - files are in sys._MEIPASS
+            bundle_dir = sys._MEIPASS
+            cloudflare_helper_path = os.path.join(bundle_dir, 'cloudflare_helper.py')
+        else:
+            # Running as script - files are in current directory
+            bundle_dir = os.path.dirname(os.path.abspath(__file__))
+            cloudflare_helper_path = os.path.join(bundle_dir, 'cloudflare_helper.py')
+        
+        # Check if cloudflare_helper.py exists
+        if not os.path.exists(cloudflare_helper_path):
+            print("❌ cloudflare_helper.py not found!")
+            print(f"\nSearched in: {cloudflare_helper_path}")
+            input("\nPress Enter to return to main menu...")
+            return
+        
+        # Start Cloudflare tunnel programmatically
+        print("[*] Setting up Cloudflare tunnel for Trusted Web Mode (Port 5000)...")
+        
+        # Import cloudflare helper functions directly
+        try:
+            if getattr(sys, 'frozen', False):
+                sys.path.insert(0, bundle_dir)
+            
+            from cloudflare_helper import start_cloudflare_tunnel, check_cloudflared_installed
+            
+            # First check if cloudflared is available
+            print("[*] Checking for cloudflared...")
+            cloudflared_available, cloudflared_cmd = check_cloudflared_installed()
+            
+            if not cloudflared_available:
+                print("❌ cloudflared not found!")
+                print("Please make sure cloudflared.exe is available.")
+                input("\nPress Enter to return to main menu...")
+                return
+            
+            print(f"✅ Using cloudflared: {cloudflared_cmd}")
+            print()
+            
+            # Start tunnel for web mode (port 5000)
+            success, tunnel_url, tunnel_process = start_cloudflare_tunnel(
+                port=5000, 
+                protocol='http', 
+                cloudflared_cmd=cloudflared_cmd
+            )
+            
+            if success and tunnel_url:
+                print(f"\n✅ CLOUDFLARE TUNNEL ACTIVE!")
+                print(f"🌐 Public URL: {tunnel_url}")
+                print(f"📡 Local: localhost:5000")
+                
+                # Copy URL to clipboard
+                copy_to_clipboard(tunnel_url, "Cloudflare URL")
+                
+                print()
+                print("-" * 50)
+                print()
+                
+                # Step 2: Start trusted web server
+                print("🖥️  STEP 2: Starting Trusted Screen Share Server...")
+                print("=" * 50)
+                print()
+                
+                server = TrustedScreenShareWebServer()
+                print(f"[*] Trusted screen share server starting on port 5000...")
+                print(f"[*] Cloudflare tunnel URL: {tunnel_url}")
+                print(f"[*] This mode is mobile-friendly!")
+                print()
+                
+                # Display combined information
+                print("🎯 READY TO SHARE! (TRUSTED MODE)")
+                print("=" * 50)
+                print(f"🌐 Share this URL: {tunnel_url}")
+                print("⚠️  TRUSTED MODE - No security code required!")
+                print("🔓 All connections will be automatically accepted")
+                print("🚀 Unlimited bandwidth via Cloudflare!")
+                print("📝 Connection details will be logged for your reference")
+                print("=" * 50)
+                print()
+                
+                # Start the trusted web server
+                server.start_sharing()
+                
+            else:
+                print("❌ Failed to start Cloudflare tunnel")
+                input("\nPress Enter to return to main menu...")
+                return
+                
+        except ImportError as e:
+            print(f"❌ Error importing cloudflare_helper: {e}")
+            input("\nPress Enter to return to main menu...")
+            return
+        except Exception as e:
+            print(f"❌ Error starting Cloudflare tunnel: {e}")
+            input("\nPress Enter to return to main menu...")
+            return
+        
+    except KeyboardInterrupt:
+        print("\n\n[!] Trusted merged session stopped by user")
+        input("\nPress Enter to return to main menu...")
+    except ImportError as e:
+        print(f"❌ Error: Could not import required modules - {e}")
+        print("Make sure web_server_trusted.py and cloudflare_helper.py exist in the same directory.")
         input("\nPress Enter to return to main menu...")
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -827,12 +995,16 @@ def main():
                 run_server()
             elif choice == 'web_server':
                 run_web_server()
+            elif choice == 'web_server_trusted':
+                run_web_server_trusted()
             elif choice == 'client':
                 run_client()
             elif choice == 'cloudflare':
                 run_cloudflare()
             elif choice == 'cloudflare_merged':
                 run_cloudflare_merged()
+            elif choice == 'cloudflare_trusted_merged':
+                run_cloudflare_trusted_merged()
             elif choice == 'ngrok':
                 run_ngrok()
             elif choice == 'ngrok_status':
