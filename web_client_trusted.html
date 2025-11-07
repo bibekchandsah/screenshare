@@ -1464,14 +1464,16 @@
                 isFullscreen = false;
             }
             
-            loadingIndicator.style.display = 'block';
+            loadingIndicator.style.display = 'none';
             
-            clearSecurityCode();
             connectBtn.disabled = false;
-            connectBtn.textContent = 'Connect to Screen Share';
+            connectBtn.textContent = '🚀 Connect to Screen Share';
             
             hideMessage(loginMessage);
             hideMessage(viewerMessage);
+            
+            // Generate new session ID for next connection
+            sessionId = 'session_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
             
             showToast('success', 'Disconnected', 'You have been disconnected from the screen share.', 3000);
         }
