@@ -1,6 +1,12 @@
 """
 Build Script for Screen Sharing Application
 Compiles the Python application to a standalone EXE file
+
+Updated for streamlined application:
+- Includes Cloudflare tunnel support
+- Includes trusted mode (no security code)
+- Removed ngrok functionality
+- Includes both regular and trusted web clients
 """
 
 import PyInstaller.__main__
@@ -24,11 +30,11 @@ def build_exe():
         'server.py',
         'client.py',
         'web_server.py',
-        'ngrok_helper.py',
+        'web_server_trusted.py',
         'cloudflare_helper.py',
         'web_client.html',
+        'web_client_trusted.html',
         'cloudflared.exe',
-        'ngrok.exe',
         'icon.ico',
         'icon.png'
     ]
@@ -66,9 +72,10 @@ def build_exe():
         '--add-data=server.py;.',
         '--add-data=client.py;.',
         '--add-data=web_server.py;.',
-        '--add-data=ngrok_helper.py;.',
+        '--add-data=web_server_trusted.py;.',
         '--add-data=cloudflare_helper.py;.',
         '--add-data=web_client.html;.',
+        '--add-data=web_client_trusted.html;.',
         
         # Data files
         # '--add-data=path/to/datafile;destination_folder',
@@ -77,7 +84,6 @@ def build_exe():
         
         # binary files
         '--add-binary=cloudflared.exe;.',
-        '--add-binary=ngrok.exe;.',
         
         # Exclude Qt bindings (we don't use Qt, only OpenCV)
         '--exclude-module=PyQt5',
@@ -99,7 +105,6 @@ def build_exe():
         '--hidden-import=cv2',
         '--hidden-import=flask',
         '--hidden-import=flask_cors',
-        '--hidden-import=pyngrok',
         '--hidden-import=pystray',
         '--hidden-import=pystray._win32',
         '--hidden-import=requests',
@@ -147,13 +152,16 @@ def build_exe():
         print("  1. Copy ScreenShare.exe to any Windows PC")
         print("  2. Run it without Python installed")
         print("  3. Share it with others!")
+        print("  4. Use Cloudflare tunnels for unlimited bandwidth")
+        print("  5. Choose trusted mode for easy sharing")
         print()
         print("⚠️  IMPORTANT NOTES:")
         print("  • The EXE shows a console window (required for the interactive menu)")
-        print("  • The EXE file is quite large (~100-105 MB with ngrok, ~86 MB without)")
+        print("  • The EXE file is quite large (~200-300 MB) due to bundled libraries")
         print("  • First run may be slow as Windows scans the file")
         print("  • Windows Defender might flag it (false positive - it's safe)")
-        print("  • For web_client.html, keep it in the same folder as the EXE")
+        print("  • For web_client.html and web_client_trusted.html, keep them in the same folder as the EXE")
+        print("  • Includes both regular and trusted mode web clients")
         print()
         
     except Exception as e:
