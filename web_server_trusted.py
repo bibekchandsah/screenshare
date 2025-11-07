@@ -32,6 +32,7 @@ class TrustedScreenShareWebServer:
         self.current_frame = None
         self.frame_lock = threading.Lock()
         self.active_streams = {}  # Track active streaming connections
+        self.session_qualities = {}  # Persistent quality preferences per session
         self.connected_users_log = []  # Log of connected users
         
         # Quality settings (same as regular server)
@@ -254,16 +255,19 @@ class TrustedScreenShareWebServer:
                     client_ip = self.client_address[0]
                     
                     with server_instance.user_count_lock:
+                        # Use persistent session quality preference, fallback to default
+                        session_quality = server_instance.session_qualities.get(session_id, server_instance.current_quality)
+                        
                         server_instance.active_streams[session_id] = {
                             'ip': client_ip,
                             'start_time': time.time(),
                             'frames_sent': 0,
-                            'quality': server_instance.current_quality
+                            'quality': session_quality
                         }
                     
                     active_count = len(server_instance.active_streams)
                     print(f"[*] Stream started for session {session_id[:8]}... from {client_ip}")
-                    print(f"[*] Active viewers: {active_count}")
+                    print(f"[*] Active viewers: {active_count}, Quality: {session_quality.title()}")
                     
                     # Send MJPEG stream headers
                     self.send_response(200)
@@ -305,8 +309,9 @@ class TrustedScreenShareWebServer:
                     finally:
                         with server_instance.user_count_lock:
                             if session_id in server_instance.active_streams:
+                                final_quality = server_instance.active_streams[session_id].get('quality', 'unknown')
                                 del server_instance.active_streams[session_id]
-                        print(f"[*] Stream ended for session {session_id[:8]}... ({frames_sent} frames sent)")
+                        print(f"[*] Stream ended for session {session_id[:8]}... ({frames_sent} frames sent, {final_quality} quality)")
                 
                 else:
                     self.send_response(404)
@@ -371,11 +376,13 @@ class TrustedScreenShareWebServer:
                             self.wfile.write(response.encode())
                             return
                         
-                        # Update quality for this specific session
+                        # Update quality for this specific session (persistent)
+                        server_instance.session_qualities[session_id] = quality
                         if session_id in server_instance.active_streams:
                             server_instance.active_streams[session_id]['quality'] = quality
                         
                         print(f"[*] Quality changed to '{quality}' for session {session_id[:8]}...")
+                        print(f"[*] Session quality preferences: {[(sid[:8], qual) for sid, qual in server_instance.session_qualities.items()]}")
                         
                         self.send_response(200)
                         self.send_header('Content-type', 'application/json')
@@ -462,6 +469,7 @@ class TrustedScreenShareWebServer:
         self.sharing = False
         self.authorized_sessions.clear()
         self.active_streams.clear()
+        self.session_qualities.clear()  # Clear session quality preferences
         
         # Print connection summary
         if self.connected_users_log:
