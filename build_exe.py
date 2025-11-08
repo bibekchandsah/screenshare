@@ -67,6 +67,7 @@ def build_exe():
         '--onefile',                            # Single executable file
         '--console',                            # Show console (required for interactive menu)
         '--icon=icon.ico',                      # No icon (you can add one later)
+        '--upx-dir=C:/upx',                     # UPX directory (optional, speeds up EXE)
         
         # Add all Python modules
         '--add-data=server.py;.',
