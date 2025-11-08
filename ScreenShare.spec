@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
 
-hiddenimports = ['mss', 'mss.windows', 'mss.linux', 'mss.darwin', 'PIL', 'PIL._imagingtk', 'PIL._tkinter_finder', 'cv2', 'flask', 'flask_cors', 'pyngrok', 'pystray', 'pystray._win32', 'requests', 'threading', 'socket', 'json', 'base64', 'io', 'time', 'datetime']
+hiddenimports = ['mss', 'mss.windows', 'mss.linux', 'mss.darwin', 'PIL', 'PIL._imagingtk', 'PIL._tkinter_finder', 'cv2', 'flask', 'flask_cors', 'pystray', 'pystray._win32', 'requests', 'threading', 'socket', 'json', 'base64', 'io', 'time', 'datetime']
 hiddenimports += collect_submodules('mss')
 hiddenimports += collect_submodules('flask')
 hiddenimports += collect_submodules('cv2')
@@ -11,8 +11,8 @@ hiddenimports += collect_submodules('pystray')
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
-    datas=[('server.py', '.'), ('client.py', '.'), ('web_server.py', '.'), ('ngrok_helper.py', '.'), ('web_client.html', '.'), ('icon.ico', '.'), ('icon.png', '.')],
+    binaries=[('cloudflared.exe', '.')],
+    datas=[('server.py', '.'), ('client.py', '.'), ('web_server.py', '.'), ('web_server_trusted.py', '.'), ('cloudflare_helper.py', '.'), ('web_client.html', '.'), ('web_client_trusted.html', '.'), ('icon.ico', '.'), ('icon.png', '.')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

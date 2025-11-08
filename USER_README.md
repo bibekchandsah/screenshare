@@ -25,15 +25,17 @@ Double-click **ScreenShare.exe**
 
 Choose an option:
 
-  [1] Share My Screen (Desktop App)
-  [2] Share My Screen (Web Browser - Mobile Friendly)
-  [3] View Someone's Screen (Desktop App)
-  [4] Start ngrok Tunnel (For Internet Access)
-  [5] Check ngrok Status
-  [6] Exit
+  [1] Share My Screen
+  [2] View Someone's Screen
+  [3] Cloudflare Tunnel (HTTP) - Web Browser Access
+  [4] Cloudflare Tunnel (TCP) - Direct Connection
+  [5] Trusted Mode - No Security Code Required
+  [6] Cloudflare + Trusted - Easy Internet Sharing
+  [7] Help - Show Usage Instructions
+  [8] Exit
 ------------------------------------------------------------
 
-Enter your choice (1-6):
+Enter your choice (1-8):
 ```
 
 ---
@@ -52,79 +54,119 @@ Enter your choice (1-6):
 
 ## 🎯 Features
 
-### 1. Share My Screen (Desktop App)
+### 1. Share My Screen
 
-Share your screen with high quality using a desktop viewer.
+Share your screen with high quality using web browser access.
 
 **How to use:**
 1. Choose option **[1]**
 2. Note the security code shown
-3. Share your IP address and security code with viewer
-4. They connect using option **[3]**
+3. Note the URL (e.g., `http://192.168.1.100:5000`)
+4. Share URL and security code with viewer
+5. They open URL in any browser and enter the code
 
 **Benefits:**
-- ✅ High quality
-- ✅ Low latency
+- ✅ High quality streaming
+- ✅ Mobile-friendly web interface
 - ✅ Secure (code-protected)
+- ✅ Works on any device with a browser
 
-### 2. Share My Screen (Web Browser)
-
-Share your screen via web browser - perfect for mobile!
-
-**How to use:**
-1. Choose option **[2]**
-2. Note the URLs shown (e.g., `http://192.168.1.100:5000`)
-3. Share URL and security code with viewer
-4. They open URL in any browser
-5. They enter security code
-
-**Benefits:**
-- ✅ Mobile-friendly
-- ✅ No app needed for viewer
-- ✅ Works on any device (phone, tablet, PC)
-- ✅ Beautiful web interface
-
-### 3. View Someone's Screen
+### 2. View Someone's Screen
 
 Connect to someone who is sharing their screen.
 
 **How to use:**
-1. Choose option **[3]**
+1. Choose option **[2]**
 2. Enter their IP address (e.g., `192.168.1.100` or `localhost`)
-3. Enter port (default: `5555` for desktop)
+3. Enter port (default: `5555`)
 4. Enter security code
 
 **Tips:**
 - Use `localhost` if on same PC
 - Use LAN IP (e.g., `192.168.1.100`) if on same network
-- Use ngrok URL for internet sharing
+- Use Cloudflare URL for internet sharing
 
-### 4. Start ngrok Tunnel
+### 3. Cloudflare Tunnel (HTTP) - Web Browser Access
 
-Share your screen over the **internet** (not just local network).
+Share your screen over the **internet** using Cloudflare tunnels for web browser access.
 
 **How to use:**
-1. Choose option **[4]**
-2. Choose tunnel type:
-   - **[1]** HTTP (for web browser mode - port 5000)
-   - **[2]** TCP (for desktop app mode - port 5555)
-   - **[3]** Custom port
-3. Note the ngrok URL (e.g., `https://abc123.ngrok.io`)
-4. Share this URL with anyone worldwide!
+1. Choose option **[3]**
+2. Note the Cloudflare URL (e.g., `https://abc-def-123.trycloudflare.com`)
+3. Share this URL with anyone worldwide!
+4. They can access your screen through their web browser
 
 **Benefits:**
 - ✅ Share over internet (not just LAN)
 - ✅ No port forwarding needed
+- ✅ Unlimited bandwidth
 - ✅ Works from anywhere
-- ✅ Free to use
+- ✅ Mobile-friendly
 
-### 5. Check ngrok Status
+### 4. Cloudflare Tunnel (TCP) - Direct Connection
 
-See if ngrok tunnels are running.
+Create a direct TCP tunnel for desktop-to-desktop connections over the internet.
+
+**How to use:**
+1. Choose option **[4]**
+2. Note the tunnel details shown
+3. Share connection info with viewer
+4. They use option **[2]** to connect
+
+**Benefits:**
+- ✅ Direct TCP connection
+- ✅ Lower latency than HTTP
+- ✅ Internet access via Cloudflare
+- ✅ No bandwidth limits
+
+### 5. Trusted Mode - No Security Code Required
+
+Share your screen without requiring security codes - perfect for trusted environments.
 
 **How to use:**
 1. Choose option **[5]**
-2. View active tunnels and URLs
+2. Note the URL shown
+3. Share URL with trusted viewers
+4. They can connect immediately without entering codes
+
+**Benefits:**
+- ✅ No security code hassle
+- ✅ Instant access for trusted users
+- ✅ Perfect for family/team sharing
+- ✅ Same high-quality streaming
+
+**⚠️ Security Note:** Only use in trusted environments!
+
+### 6. Cloudflare + Trusted - Easy Internet Sharing
+
+Combines Cloudflare internet access with trusted mode for the easiest possible sharing.
+
+**How to use:**
+1. Choose option **[6]**
+2. Note the Cloudflare URL
+3. Share URL with anyone worldwide
+4. They connect instantly without codes
+
+**Benefits:**
+- ✅ Internet access via Cloudflare
+- ✅ No security codes needed
+- ✅ Easiest sharing method
+- ✅ Perfect for demonstrations
+
+**⚠️ Security Note:** URL access grants immediate screen viewing!
+
+### 7. Help - Show Usage Instructions
+
+Get detailed help and usage instructions.
+
+**How to use:**
+1. Choose option **[7]**
+2. View comprehensive usage guide
+3. Learn about all features and options
+
+### 8. Exit
+
+Safely close the application.
 
 ---
 
@@ -134,7 +176,7 @@ See if ngrok tunnels are running.
 
 **Sharer (Person A):**
 1. Run ScreenShare.exe
-2. Choose **[2]** (Web Browser)
+2. Choose **[1]** (Share My Screen)
 3. Note URL: `http://192.168.1.100:5000`
 4. Note security code: `ABC123`
 5. Tell Person B: "Go to `192.168.1.100:5000` and use code `ABC123`"
@@ -148,38 +190,48 @@ See if ngrok tunnels are running.
 
 ---
 
-### Example 2: Share Screen Over Internet
+### Example 2: Share Screen Over Internet (with Security)
 
 **Sharer (Person A):**
 1. Run ScreenShare.exe
-2. Choose **[4]** (ngrok)
-3. Choose **[1]** (HTTP tunnel)
-4. Note URL: `https://abc123.ngrok.io`
-5. Keep this window open!
-6. Open **another terminal/command prompt**
-7. Run ScreenShare.exe again
-8. Choose **[2]** (Web Browser)
-9. Note security code: `ABC123`
-10. Tell Person B: "Go to `https://abc123.ngrok.io` and use code `ABC123`"
+2. Choose **[3]** (Cloudflare HTTP)
+3. Note URL: `https://abc-def-123.trycloudflare.com`
+4. Note security code: `ABC123`
+5. Tell Person B: "Go to `https://abc-def-123.trycloudflare.com` and use code `ABC123`"
 
 **Viewer (Person B - anywhere in the world!):**
 1. Open browser
-2. Go to `https://abc123.ngrok.io`
+2. Go to `https://abc-def-123.trycloudflare.com`
 3. Enter code `ABC123`
 4. Click "Connect"
 5. See Person A's screen!
 
 ---
 
-### Example 3: View Someone's Desktop Screen
+### Example 3: Easy Internet Sharing (Trusted Mode)
+
+**Sharer (Person A):**
+1. Run ScreenShare.exe
+2. Choose **[6]** (Cloudflare + Trusted)
+3. Note URL: `https://xyz-uvw-789.trycloudflare.com`
+4. Tell Person B: "Just go to `https://xyz-uvw-789.trycloudflare.com`"
+
+**Viewer (Person B - anywhere in the world!):**
+1. Open browser
+2. Go to `https://xyz-uvw-789.trycloudflare.com`
+3. Instantly see Person A's screen! (No code needed)
+
+---
+
+### Example 4: View Someone's Screen
 
 **Viewer (You):**
 1. Run ScreenShare.exe
-2. Choose **[3]**
-3. Enter IP: `192.168.1.100` (their LAN IP)
+2. Choose **[2]** (View Someone's Screen)
+3. Enter IP: `192.168.1.100` (their LAN IP) or Cloudflare URL
 4. Enter port: `5555` (default)
 5. Enter code: `ABC123` (they give you this)
-6. View their screen in OpenCV window!
+6. View their screen in your browser!
 
 ---
 
@@ -233,15 +285,15 @@ Windows: ipconfig
 Look for "IPv4 Address"
 ```
 
-### 3. Internet (ngrok)
+### 3. Internet (Cloudflare)
 
 **Use when:** Different networks or worldwide
 
 **Sharer:** 
-1. Run option [4] (ngrok first!)
-2. Run option [1] or [2] (sharing)
+1. Run option [3] (Cloudflare HTTP) or [6] (Cloudflare + Trusted)
+2. Note the Cloudflare URL
 
-**Viewer:** Use ngrok URL (e.g., `https://abc123.ngrok.io`)
+**Viewer:** Use Cloudflare URL (e.g., `https://abc-def-123.trycloudflare.com`)
 
 ---
 
@@ -267,7 +319,7 @@ This is a false positive - the app is safe!
 ```
 1. Close other screen sharing apps
 2. Check Windows Firewall
-3. Try different port in ngrok (option [4] → [3] Custom)
+3. Try different Cloudflare tunnel (restart option [3])
 ```
 
 ---
@@ -285,8 +337,8 @@ This is a false positive - the app is safe!
 **Solution:**
 ```
 For internet sharing:
-1. Use ngrok (option [4])
-2. Share ngrok URL (not local IP)
+1. Use Cloudflare tunnels (option [3] or [6])
+2. Share Cloudflare URL (not local IP)
 ```
 
 ---
@@ -294,12 +346,13 @@ For internet sharing:
 ### Problem: "web_client.html not found"
 
 **Solution:**
-Make sure `web_client.html` is in the **same folder** as `ScreenShare.exe`!
+Make sure both `web_client.html` and `web_client_trusted.html` are in the **same folder** as `ScreenShare.exe`!
 
 ```
 Folder structure:
-  ScreenShare.exe    ✅
-  web_client.html    ✅
+  ScreenShare.exe           ✅
+  web_client.html          ✅
+  web_client_trusted.html  ✅
 ```
 
 ---
@@ -312,88 +365,104 @@ Folder structure:
 
 **Solution:**
 ```
-• Use Desktop mode (option [1]) for better performance
+• Use local network sharing for better performance
 • Close unnecessary applications
 • Use wired connection instead of WiFi
+• Try trusted mode (option [5]) for fewer authentication delays
 ```
 
 ---
 
-### Problem: ngrok Not Working
+### Problem: Cloudflare Tunnel Not Working
 
 **Check:**
 1. ✅ Internet connection
-2. ✅ ngrok tunnel running (option [4])
-3. ✅ Keep ngrok window open
+2. ✅ Cloudflare tunnel running (option [3] or [4])
+3. ✅ Keep tunnel window open
 
 **Solution:**
 ```
-1. Check status: Option [5]
-2. Restart ngrok: Close and choose option [4] again
+1. Check if tunnel is active
+2. Restart Cloudflare: Close and choose option [3] or [4] again
 3. Wait a few seconds for tunnel to establish
+4. Try option [7] for help
 ```
 
 ---
 
 ## 💡 Tips & Tricks
 
-### Tip 1: Two Terminals for Internet Sharing
+### Tip 1: Easy Internet Sharing
 
-For best experience sharing over internet:
+For the simplest internet sharing experience:
 
-**Terminal 1:**
+**Single Step:**
 ```
 Run ScreenShare.exe
-Choose [4] (ngrok)
-Choose [1] (HTTP) or [2] (TCP)
-KEEP THIS OPEN!
+Choose [6] (Cloudflare + Trusted)
+Share the URL - that's it!
 ```
 
-**Terminal 2:**
+### Tip 2: Secure Internet Sharing
+
+For secure internet sharing with authentication:
+
+**Two Steps:**
 ```
-Run ScreenShare.exe again
-Choose [2] (Web) or [1] (Desktop)
-Share screen!
+1. Run ScreenShare.exe
+2. Choose [3] (Cloudflare HTTP)
+3. Share URL and security code
 ```
 
 ---
 
-### Tip 2: Mobile Viewing
+### Tip 3: Mobile Viewing
 
-Use Web Browser mode (option [2]) for mobile viewers!
+All sharing modes work great on mobile!
 
 **Perfect for:**
 - ✅ Phones
 - ✅ Tablets
 - ✅ Any device with browser
 
+**Best options for mobile:**
+- Option [1] (regular mode)
+- Option [5] (trusted mode - no code needed)
+- Option [6] (Cloudflare + trusted for internet)
+
 ---
 
-### Tip 3: Quick Same-PC Test
+### Tip 4: Quick Same-PC Test
 
 **Test everything works:**
 1. Run ScreenShare.exe
-2. Choose [2] (Web Browser)
+2. Choose [1] (Share My Screen)
 3. Open browser
 4. Go to `http://localhost:5000`
 5. Enter security code
 6. Should see your screen!
 
+**Test trusted mode:**
+1. Run ScreenShare.exe
+2. Choose [5] (Trusted Mode)
+3. Open browser
+4. Go to `http://localhost:5000`
+5. No code needed - instant access!
+
 ---
 
-### Tip 4: Share Multiple Screens
+### Tip 5: Share Multiple Screens
 
 Want to share to multiple viewers?
 
-**Web mode (option [2]):**
-- ✅ Multiple viewers can connect
-- ✅ Each enters same security code
+**All modes support multiple viewers:**
+- ✅ Multiple viewers can connect simultaneously
+- ✅ Each enters same security code (except trusted mode)
 - ✅ All see your screen
 
-**Desktop mode (option [1]):**
-- ❌ One viewer at a time
-
-**Recommendation:** Use Web mode for multiple viewers!
+**Recommendation:** 
+- Use trusted mode (option [5]) for easy multiple access
+- Use Cloudflare + trusted (option [6]) for internet sharing to multiple people
 
 ---
 
@@ -401,11 +470,12 @@ Want to share to multiple viewers?
 
 ### Q: Do viewers need to install anything?
 
-**A:** 
-- **Web mode:** No! Just a browser.
-- **Desktop mode:** Yes, they need the EXE too.
+**A:** No! All modes use web browsers.
+- All screen sharing is browser-based
+- Works on any device with a web browser
+- No installation required for viewers
 
-**Recommendation:** Use Web mode for easy sharing!
+**Recommendation:** Share the URL and viewers just open their browser!
 
 ---
 
@@ -413,10 +483,11 @@ Want to share to multiple viewers?
 
 **A:** Yes! Completely free to use.
 
-**ngrok:** Free tier allows:
-- ✅ 1 online session at a time
-- ✅ Random URL (changes each session)
+**Cloudflare tunnels:** Free and unlimited
 - ✅ Unlimited bandwidth
+- ✅ No session limits  
+- ✅ Global edge network
+- ✅ HTTPS encryption
 
 ---
 
@@ -448,15 +519,18 @@ For Mac/Linux, use the Python source code instead.
 
 ### Q: How many people can view at once?
 
-**Web mode:** Many viewers (limited by your bandwidth)
-**Desktop mode:** One viewer at a time
+**All modes:** Many viewers (limited by your bandwidth)
+- Multiple people can connect simultaneously
+- Each uses same URL (and security code if not in trusted mode)
+- Great for presentations and demonstrations
 
 ---
 
 ### Q: Is my data encrypted?
 
-**For ngrok (internet):** Yes, HTTPS encrypted
+**For Cloudflare (internet):** Yes, HTTPS encrypted
 **For local network:** Unencrypted (LAN only)
+**Trusted mode:** Same encryption as regular mode (just no authentication)
 
 ---
 
@@ -501,9 +575,9 @@ Thank you for using **Screen Sharing Application**!
 
 ---
 
-**Version:** 1.0
-**Built:** October 13, 2025
-**Size:** 86 MB
+**Version:** 2.0
+**Built:** November 8, 2025
+**Size:** ~85-100 MB
 **Platform:** Windows 10/11 (64-bit)
 
 ---

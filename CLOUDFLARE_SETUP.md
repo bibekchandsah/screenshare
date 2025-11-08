@@ -9,32 +9,15 @@ You have cloudflared working (your manual command succeeded), but our Python scr
 2. **Copy it** to this folder: `D:\Programming\program exercise\Python\screen share`
 3. **Run the script** again: `python cloudflare_helper.py`
 
-### ✅ **Solution 2: Use Setup Helper**
-```bash
-# Run this batch script for guided setup
-setup_cloudflared.bat
-```
-
-### ✅ **Solution 3: Add to System PATH**
-1. Press `Win+R`, type `sysdm.cpl`, press Enter
-2. Click "Environment Variables"
-3. Edit "PATH" variable
-4. Add the folder containing your cloudflared.exe
-5. Restart terminal and try again
 
 ## 📋 Verification Steps
 
-### **Step 1: Test Installation**
-```bash
-python test_cloudflared.py
-```
-
-### **Step 2: Run Cloudflare Helper**
+### **Step 1: Run Cloudflare Helper**
 ```bash
 python cloudflare_helper.py
 ```
 
-### **Step 3: Start Your Screen Share**
+### **Step 2: Start Your Screen Share**
 ```bash
 python main.py
 ```
@@ -111,7 +94,7 @@ python cloudflare_helper.py
 ### **For Web Sharing (Port 5000):**
 ```bash
 python cloudflare_helper.py  # Choose option 1
-python main.py               # Choose option 2 (Web Mode)
+python main.py               # Choose option 3 (Web Mode)
 ```
 
 ### **For Desktop Sharing (Port 5555):**
