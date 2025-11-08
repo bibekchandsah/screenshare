@@ -2,6 +2,23 @@
 
 A Python-based screen sharing application with security code authentication and advanced web viewing features. Share your screen securely with others in real-time with professional quality!
 
+## 🎯 Quick Download
+
+**⬇️ Download Ready-to-Use EXE File:**
+**[📥 Download Latest Release](https://github.com/bibekchandsah/screenshare/releases)**
+
+- 🚀 **No Python Required** - Just download and run!
+- 📦 **Portable** - No installation needed
+- 🔒 **Safe** - Windows Defender may show warning (false positive)
+- 💾 **Size** - ~85-100 MB optimized build
+
+## 📸 Application Preview
+
+![Application Preview](preview.png)
+![Application Preview](preview2.png)
+
+*Real-time screen sharing with modern web interface, mobile-friendly design, and professional quality streaming*
+
 ## Features
 
 ### Core Features
@@ -51,10 +68,14 @@ A Python-based screen sharing application with security code authentication and 
 - 📋 **Queue System**: Sequential approval processing for multiple requests
 - 🚫 **Thread-Safe**: Race condition prevention with proper locking
 
-## Requirements
+## 📋 System Requirements
 
-- Python 3.7 or higher
-- Windows/Linux/macOS
+- ✅ **Python** 3.7 or higher
+- ✅ **OS:** Windows 10|11/Linux/macOS (64-bit)
+- ✅ **RAM:** 4 GB minimum
+- ✅ **Disk:** 100 MB free space
+- ✅ **Network:** Local network or internet connection
+- ✅ **Python:** **NOT REQUIRED!** (Built-in)
 
 ## Installation
 
@@ -75,73 +96,119 @@ Simply run the main application and choose what you want to do:
 python main.py
 ```
 
-You'll see a menu with four options:
+You'll see a menu with eight options:
 
 ```
 ============================================================
-               SCREEN SHARING APPLICATION
+              SCREEN SHARING APPLICATION
 ============================================================
 
 Choose an option:
 
   [1] Share My Screen (Desktop App)
-  [2] Share My Screen (Web Browser - Mobile Friendly)
-  [3] View Someone's Screen (Desktop App)
-  [4] Exit
-
+  [2] View Someone's Screen (Desktop App)
+  [3] Share My Screen (Web Browser - Mobile Friendly)
+  [4] Start Cloudflare Tunnel (Unlimited Bandwidth)
+  [5] Share My Screen via Cloudflare Tunnel (Merged)
+  [6] Share My Screen (Trusted Mode - No Security Code)
+  [7] Share My Screen Trusted Mode via Cloudflare Tunnel (Merged)
+  [8] Exit
 ------------------------------------------------------------
 
-Enter your choice (1/2/3/4):
+Enter your choice (1-8):
 ```
 
 #### Option 1: Share My Screen (Desktop App)
-
+**This option works under both user is connected under same wifi**
 1. Select option **1** from the menu
-2. A **security code** will be generated and displayed (e.g., `XGFRDW`)
-3. Share this code with the person who wants to view your screen
-4. The server will start listening for connections
-5. When someone connects with the correct code, you'll be asked to approve the connection
-6. Press `Ctrl+C` to stop sharing and return to the menu
+2. Your screen will be captured and displayed in a new desktop window
+3. A **security code** will be generated and displayed (e.g., `ABC123`)
+4. Note the server details for viewers to connect (e.g., SERVER IP: `10.5.234.63`)
+5. Viewers can connect using Option 2 (desktop app) with the security code
+6. Press `Q` key or `ESC` to stop sharing and return to menu
+
+**Benefits:**
+- ✅ Desktop-to-desktop connection
+- ✅ Direct screen capture display
+- ✅ High quality streaming
+- ✅ Secure (code-protected)
+- ✅ High performance for local networks
 
 **Example Output:**
 ```
 🖥️  SHARE MY SCREEN MODE
 ============================================================
 
-==================================================
-SECURITY CODE: XGFRDW
-==================================================
-Share this code with the person who wants to view your screen
-==================================================
+[*] Press Ctrl+C to stop sharing
+
+
+============================================================
+🔐 SECURITY CODE: XMP7MG
+📡 SERVER IP: 10.5.234.63
+🔌 PORT: 5555
+============================================================
+📤 Share this information with the viewer:
+   IP Address: 10.5.234.63
+   Security Code: XMP7MG
+============================================================
 
 [*] Server listening on 0.0.0.0:5555
+[*] Starting optimized screen capture loop...
 [*] Waiting for connections...
-[*] Connection from ('127.0.0.1', 58210)
-Do you want to allow this connection? (y/n): y
-[+] Client ('127.0.0.1', 58210) connection approved
+[*] Starting optimized capture loop for multi-user performance
 ```
 
-#### Option 2: Share My Screen (Web Browser - Mobile Friendly) 🆕
+#### Option 2: View Someone's Screen (Desktop App)
 
-**Perfect for viewing on mobile phones, tablets, or any device with a browser!**
+1. Select option **2** from the menu
+2. Enter the required information when prompted:
+   - **Server IP address**: 
+     - Use `localhost` or `127.0.0.1` if viewing on the same PC
+     - Use the actual IP address if connecting from another PC (e.g., `192.168.1.100`)
+   - **Port**: Press Enter for default (5555) or enter custom port
+   - **Security code**: Enter the 6-character code provided by the person sharing
+3. Wait for server approval
+4. If approved, you'll see the shared screen in a new desktop window
+5. Press `Q` key or `ESC` to quit viewing and return to the menu
+
+**Example:**
+```
+👀 VIEW SOMEONE'S SCREEN MODE
+============================================================
+
+Enter server IP address (or 'localhost' for same PC): localhost
+Enter server port (default: 5555): 
+Enter the security code: XGFRDW
+
+------------------------------------------------------------
+[+] Successfully connected to server!
+[*] Receiving screen feed...
+[*] Press 'q' to quit
+```
+
+#### Option 3: Share My Screen (Web Browser - Mobile Friendly)
+
+**Perfect for viewing on mobile phones, tablets, or any device with a browser under same wifi!**
 
 1. Select option **2** from the menu
 2. A **security code** will be generated and displayed
-3. The application will show URLs to access the screen share:
+3. Press C to **copy the security code to clipboard**, or any other key to skip:
+4. The application will show URLs to access the screen share:
    ```
    Access the screen share from your browser at:
-       http://192.168.1.100:8080
-       http://localhost:8080
+       http://192.168.1.100:5000
+       http://localhost:5000
    ```
-4. **On your mobile phone or any device:**
+5. **On your mobile phone or any device:**
    - Make sure it's connected to the **same WiFi network** as your PC
    - Open a web browser (Chrome, Safari, Firefox, etc.)
-   - Enter the URL shown (e.g., `http://192.168.1.100:8080`)
+   - Enter the URL shown (e.g., `http://192.168.1.100:5000`)
    - Enter the security code in individual digit boxes (auto-focus, paste support)
    - Wait for server approval
    - View the screen in real-time with high quality!
 
-5. Press `Ctrl+C` on the server to stop sharing
+6. Press `Ctrl+C` on the server to stop sharing
+7. For sharing screen over the internet sharing open new terminal and choose option **4**
 
 **Web Browser Features:**
 - ✅ **Responsive Design**: Works perfectly on any screen size
@@ -189,83 +256,129 @@ Multiple viewers can connect simultaneously!
 [*] Press Ctrl+C to stop sharing
 ```
 
-#### Option 3: View Someone's Screen (Desktop App)
-
-1. Select option **3** from the menu
-2. Enter the required information when prompted:
-   - **Server IP address**: 
-     - Use `localhost` or `127.0.0.1` if viewing on the same PC
-     - Use the actual IP address if connecting from another PC (e.g., `192.168.1.100`)
-   - **Port**: Press Enter for default (5555) or enter custom port
-   - **Security code**: Enter the 6-character code provided by the person sharing
-3. Wait for server approval
-4. If approved, you'll see the shared screen in a new window
-5. Press `Q` key or `ESC` to quit viewing and return to the menu
+#### Option 4: Start Cloudflare Tunnel (Unlimited Bandwidth)
+**Share your screen over the internet using Cloudflare tunnels for web browser access**
+1. Select option **4** from the menu
+2. Choose option **1** for Quick Tunnels (Recommended)
+3. Choose option **1** for Web Mode
+4. Cloudflare tunnel will start automatically
+5. You'll receive a public URL (e.g., `https://random-name.trycloudflare.com`)
+6. This establishes the tunnel infrastructure for screen sharing
+7. Share this URL with anyone worldwide!
+8. They can access your screen through their web browser
+9. Use this in combination with other options for internet access (Option 3 & 6)
+10. Press Ctrl+C to stop the tunnel
 
 **Example:**
 ```
-👀 VIEW SOMEONE'S SCREEN MODE
+🌐 CLOUDFLARE TUNNEL
 ============================================================
 
-Enter server IP address (or 'localhost' for same PC): localhost
-Enter server port (default: 5555): 
-Enter the security code: XGFRDW
-
-------------------------------------------------------------
-[+] Successfully connected to server!
-[*] Receiving screen feed...
-[*] Press 'q' to quit
+[*] Starting Cloudflare tunnel...
+[*] Tunnel URL: https://quick-fox-123.trycloudflare.com
+[*] Tunnel established successfully
+[*] Ready for screen sharing over internet
+[*] Press Ctrl+C to stop tunnel
 ```
 
-#### Option 4: Exit
+**Benefits:**
+- ✅ Share over internet (not just LAN)
+- ✅ No port forwarding needed
+- ✅ Unlimited bandwidth
+- ✅ Works from anywhere
+- ✅ Mobile-friendly
 
+#### Option 5: Share My Screen via Cloudflare Tunnel (Merged)
+
+1. Select option **5** from the menu
+2. This combines screen sharing with Cloudflare tunnel in one step
+3. You'll receive both a security code and public URL
+4. Cloudflare public URL will be automatically copied to clipboard
+5. Press **c** to copy the security code to clipboard
+6. Share both URL and code with viewer
+7. They can access from anywhere with internet
+8. Security code still required for approval
+9. Press Ctrl+C to stop sharing
+
+**Example:**
+```
+🌐 CLOUDFLARE TUNNEL + SCREEN SHARE (MERGED)
+============================================================
+
+[*] 🚀 Starting Cloudflare Tunnel...
+[*] 🌐 Public URL: https://bright-star-456.trycloudflare.com
+[*] Security code: ABCD12
+[*] Share both URL and code with viewer
+[*] Press Ctrl+C to stop sharing
+```
+
+**Benefits:**
+- ✅ Direct TCP connection
+- ✅ Lower latency than HTTP
+- ✅ Internet access via Cloudflare
+- ✅ No bandwidth limits
+
+#### Option 6: Share My Screen (Trusted Mode - No Security Code)
+**Share your screen without requiring security codes - perfect for trusted environments. (under same wifi)**
+1. Select option **6** from the menu
+2. Your screen starts sharing immediately without security code
+3. The server shows your IP address (e.g., `192.168.1.100:8080`)
+4. Anyone on your network can connect by entering the IP in their browser
+5. Use only in trusted environments (home network, trusted colleagues)
+6. Quality controls (High/Medium/Low) work the same way
+7. Press Ctrl+C to stop sharing
+**⚠️ Security Note:** Only use in trusted environments!
+
+**Example:**
+```
+🔓 TRUSTED MODE (NO SECURITY CODE)
+============================================================
+
+[*] Server starting on 0.0.0.0:8080
+[*] Trusted mode - no approval required
+[*] Connect with: http://192.168.1.100:8080
+[*] Press Ctrl+C to stop sharing
+```
+
+**Benefits:**
+- ✅ No security code hassle
+- ✅ Instant access for trusted users
+- ✅ Perfect for family/team sharing
+- ✅ Same high-quality streaming
+
+#### Option 7: Share My Screen Trusted Mode via Cloudflare Tunnel (Merged)
+**Combines Cloudflare internet access with trusted mode for the easiest possible sharing. (worldwide access)**
+1. Select option **7** from the menu
+2. Combines Cloudflare tunnel with trusted mode
+3. You'll receive a public URL that anyone can access directly
+4. URL will be copied automatically to clipboard
+5. No approval needed - immediate access for anyone with the link
+6. Use with extreme caution - only for very trusted recipients
+7. Press Ctrl+C to stop sharing
+**⚠️ Security Note:** URL access grants immediate screen viewing!
+
+**Example:**
+```
+🌐 CLOUDFLARE + TRUSTED MODE
+============================================================
+
+[*] Starting Cloudflare tunnel...
+[*] Public URL: https://red-moon-789.trycloudflare.com
+[*] TRUSTED MODE: No security code required
+[*] Anyone with this URL has immediate access
+[*] Press Ctrl+C to stop sharing
+```
+
+**Benefits:**
+- ✅ Internet access via Cloudflare
+- ✅ No security codes needed
+- ✅ Easiest sharing method
+- ✅ Perfect for demonstrations
+
+#### Option 8: Exit
+Safely close the application.
 Closes the application with confirmation.
 
----
-
-## 📱 **Viewing on Mobile Phone (Recommended Method)**
-
-### **Step-by-Step Guide:**
-
-1. **On Your PC:**
-   ```bash
-   python main.py
-   ```
-   - Choose option **2** (Web Browser - Mobile Friendly)
-   - Note the security code and URL displayed
-
-2. **Find Your PC's IP Address:**
-   - The app will show it, or manually check:
-     - Windows: `ipconfig` in PowerShell
-     - Look for IPv4 Address (e.g., `192.168.1.100`)
-
-3. **On Your Mobile Phone:**
-   - Connect to the **same WiFi network** as your PC
-   - Open any web browser (Chrome, Safari, Firefox, etc.)
-   - Type the URL: `http://YOUR_PC_IP:8080`
-     - Example: `http://192.168.1.100:8080`
-   - Enter the 6-character security code
-   - Wait for approval on PC
-   - Enjoy viewing your PC screen on your phone! 📱
-
-### **Firewall Configuration (Important for Mobile):**
-
-If your phone can't connect, you may need to allow the port through Windows Firewall:
-
-**Method 1 - Quick Test (Temporary):**
-- Temporarily disable Windows Firewall
-- Test if it works
-- Re-enable firewall after testing
-
-**Method 2 - Add Firewall Rule (Recommended):**
-1. Open Windows Security → Firewall & network protection
-2. Click "Advanced settings"
-3. Click "Inbound Rules" → "New Rule"
-4. Select "Port" → Next
-5. TCP, Specific port: **8080** → Next
-6. Allow the connection → Next
-7. Check all profiles → Next
-8. Name: "Screen Share Web Server" → Finish
 
 ### **Tips for Mobile Viewing:**
 - ✅ Use the same WiFi network
@@ -297,6 +410,80 @@ If your phone can't connect, you may need to allow the port through Windows Fire
 - `F` → Toggle fullscreen mode (when viewing screen)
 - `Esc` → Exit fullscreen mode (when in fullscreen)
 
+## 💡 Tips & Tricks
+
+### Tip 1: Easy Internet Sharing
+
+For the simplest internet sharing experience:
+
+**Single Step:**
+```
+Run ScreenShare.exe
+Choose [7] (Cloudflare + Trusted)
+Share the URL - that's it!
+```
+
+### Tip 2: Secure Internet Sharing
+
+For secure internet sharing with authentication:
+
+**Two Steps:**
+```
+1. Run ScreenShare.exe
+2. Choose [5] (Cloudflare HTTP)
+3. Share URL and security code
+```
+
+---
+
+### Tip 3: Mobile Viewing
+
+All sharing modes work great on mobile!
+
+**Perfect for:**
+- ✅ Phones
+- ✅ Tablets
+- ✅ Any device with browser
+
+**Best options for mobile:**
+- Option [5] (regular mode)
+- Option [6] (trusted mode - no code needed)
+- Option [7] (Cloudflare + trusted for internet)
+
+---
+
+### Tip 4: Quick Same-PC Test
+
+**Test everything works:**
+1. Run ScreenShare.exe
+2. Choose [3] (Share My Screen)
+3. Open browser
+4. Go to `http://localhost:5000`
+5. Enter security code
+6. Should see your screen!
+
+**Test trusted mode:**
+1. Run ScreenShare.exe
+2. Choose [6] (Trusted Mode)
+3. Open browser
+4. Go to `http://localhost:5000`
+5. No code needed - instant access!
+
+---
+
+### Tip 5: Share Multiple Screens
+
+Want to share to multiple viewers?
+
+**All modes support multiple viewers:**
+- ✅ Multiple viewers can connect simultaneously
+- ✅ Each enters same security code (except trusted mode)
+- ✅ All see your screen
+
+**Recommendation:** 
+- Use trusted mode (option [5]) for easy multiple access
+- Use Cloudflare + trusted (option [7]) for internet sharing to multiple people
+
 ---
 
 ## 🌐 Sharing Across Different Networks (Internet Access)
@@ -305,8 +492,11 @@ If your phone can't connect, you may need to allow the port through Windows Fire
 By default, screen sharing only works when both users are on the **same WiFi/local network**. But what if you want to share with someone in a different location?
 
 ### Solution: Remote Access Options
+- Choose option **5** (for secure connection)
+- Choose option **7** (for trusted user)
+- We are using **Cloudflare** for remote access
 
-#### **Option 1: Cloudflare Tunnel (Best Performance, Unlimited Bandwidth) 🚀**
+#### **Cloudflare Tunnel (Best Performance, Unlimited Bandwidth) 🚀**
 
 **Why Cloudflare? Superior Choice:**
 - 🌐 **No Bandwidth Limits** (ngrok has monthly limits)
@@ -314,99 +504,7 @@ By default, screen sharing only works when both users are on the **same WiFi/loc
 - 👥 **Multiple Users** (perfect for multi-user optimization)
 - 🆓 **Completely Free** (no subscription required)
 - 🔒 **More Secure** (enterprise-grade infrastructure)
-
-**Quick Setup:**
-
-1. **Download cloudflared:**
-   - Visit: https://github.com/cloudflare/cloudflared/releases
-   - Download for your OS and add to PATH
-
-2. **Login to Cloudflare:**
-   ```bash
-   cloudflared tunnel login
-   ```
-
-3. **Run the Cloudflare helper:**
-   ```bash
-   python cloudflare_helper.py
-   ```
-
-4. **Start tunnel and server:**
-   ```bash
-   # Choose option 1 (Web Mode) or 2 (Desktop Mode)
-   # Helper will create tunnel automatically
-   # Start your screen share when prompted
-   ```
-
-5. **Share the public URL:**
-   - Cloudflare gives you: `https://abc123.trycloudflare.com`
-   - Share this URL + security code with anyone, anywhere!
-
-**Cloudflare Benefits:**
-- ✅ **Unlimited Bandwidth** (vs ngrok's 1GB/month limit)
-- ✅ **Multiple Concurrent Users** (perfect for presentations)
-- ✅ **Enterprise Performance** (faster than ngrok)
-- ✅ **No Monthly Fees** (completely free)
-- ✅ **Global CDN** (better worldwide performance)
-- ✅ **More Reliable** (enterprise-grade uptime)
-
----
-
-#### **Option 2: ngrok (Alternative, Good for Testing) ⭐**
-
-**Quick Setup:**
-
-1. **Install ngrok helper:**
-   ```bash
-   pip install pyngrok
-   ```
-2. **Run the helper:**
-   ```bash
-   python ngrok_helper.py
-   # Choose option 5 for Setup ngrok Authtoken 
-   Follow instruction for setting up authtoken
-   ```
-3. **use standalone ngrok:**
-   ```bash
-   # Start your screen share first
-   python main.py
-   
-   # choose option [2] Share My Screen (Web Browser - Mobile Friendly)
-   # you will see the 
-   ```
-```
-============================================================
-SECURITY CODE: 9TV0KX
-============================================================
-Share this code with people who want to view your screen
-Multiple viewers can connect simultaneously!
-============================================================
-
-[*] Access the screen share from your browser at:
-    http://10.5.234.63:8080 <------ screehshare_url
-    http://localhost:8080
-```
-   ```
-   # Then in another terminal:
-   ngrok http http://YOUR_PC_IP:8080 or screenshare_url
-   ```
-
-4. **Share the public URL:**
-   - ngrok gives you: `https://abc123.ngrok.io`
-   - Share this URL + security code with anyone, anywhere!
-
-**ngrok Benefits:**
-- ✅ Works from anywhere in the world
-- ✅ No router configuration needed
-- ✅ Secure HTTPS tunnel
-- ✅ Free tier available
-- ✅ Setup in 2 minutes
-
-**ngrok Limitations:**
-- ❌ 1GB/month bandwidth limit (free tier)
-- ❌ Limited concurrent users
-- ❌ Slower performance vs Cloudflare
-- ❌ Monthly subscription for unlimited
+- 💰 **No Monthly Fees** (completely free)
 
 ---
 
@@ -414,25 +512,23 @@ Multiple viewers can connect simultaneously!
 
 ### Same Location (Same WiFi):
 ```bash
-# Just use options 1 & 3 directly
+# Just use options 1 & 2 or 3 directly
 python main.py → 1  # Server
-python main.py → 3  # Client
+python main.py → 2  # Client
+python main.py → 3  # Server
 ```
 
 ### Different Locations:
 ```bash
 # Use Cloudflare Tunnel (Recommended)
+python main.py → 5/7  # Server or 👇
 python cloudflare_helper.py  # Setup tunnel first
-python main.py → 1/2          # Server (use tunnel URL)
-
-# Alternative: Use ngrok tunnel  
-python ngrok_helper.py        # Setup ngrok tunnel
-python main.py → 1/2          # Server (use ngrok URL)
+python main.py → 3          # Server (use tunnel URL)
 ```
 
 **Yes, your application supports cross-location screen sharing! 🎉**
 
-The **Cloudflare Tunnel integration** provides unlimited bandwidth and better performance for multiple users, while **ngrok integration** offers quick setup for testing. Both make it very easy to connect from different locations/WiFi networks!
+The **Cloudflare Tunnel integration** provides unlimited bandwidth and better performance for multiple users.
 
 ---
 
@@ -440,9 +536,10 @@ The **Cloudflare Tunnel integration** provides unlimited bandwidth and better pe
 
 | Scenario | Server Steps | Client Steps |
 |----------|--------------|--------------|
-| **Same WiFi** | `main.py → 1/2` | `main.py → 3` or browser |
+| **Same WiFi** | `main.py → 1` | `main.py → 2` |
+| **Same WiFi** | `main.py → 3` | `URL & Security Code` |
+| **Different WiFi (Cloudflare)** | `main.py → 5/7` | `URL & Security Code` |
 | **Different WiFi (Cloudflare)** | `cloudflare_helper.py` | Use Cloudflare URL |
-| **Different WiFi (ngrok)** | `ngrok_helper.py` | Use ngrok URL |
 
 ---
 
@@ -500,7 +597,7 @@ You can customize the following settings by editing the source code:
   - Lower values = better performance, lower quality
   - Higher values = worse performance, better quality
 
-### Web Server (`web_server.py`) 🆕
+### Web Server (`web_server.py`) 
 - **Port**: Change `port=8080` in the `ScreenShareWebServer` initialization
 - **Code Length**: Change `length=6` in `generate_security_code()` method
 - **Image Quality**: 
@@ -510,6 +607,22 @@ You can customize the following settings by editing the source code:
 - **Frame Rate**: Adjust `time.sleep(0.05)` for different FPS (currently 20 FPS)
 - **Interpolation**: Uses `cv2.INTER_LANCZOS4` for best quality when scaling
 - **Progressive JPEG**: Enabled for better streaming performance
+
+### Web Server Trusted (`web_server_trusted.py`)🆕
+- 🔓 **No Security Code Required**: Provides screen sharing without authentication prompts
+- 🌐 **Web Browser Access**: Viewers can connect instantly via any web browser
+- ✅ **Trusted Environment**: Perfect for home networks, family sharing, or trusted colleagues
+- 🚀 **Instant Access**: No approval process - immediate connection once URL is accessed
+- 📱 **Mobile Friendly**: Same responsive design as regular web server
+- 🎯 **Quality Controls**: Supports High/Medium/Low quality settings with persistent storage
+- 🔒 **Local Network**: Designed for trusted local networks (not for public internet)
+
+**When to use:**
+- ✅ Family members accessing your screen
+- ✅ Trusted team meetings or presentations  
+- ✅ Demo environments where security isn't a concern
+- ✅ Quick screen sharing without authentication hassle
+- ❌ **NOT for public/untrusted networks** (no security protection)
 
 **Quality Settings Explained:**
 - `scale_percent = 100`: Full resolution (100% of original)
@@ -590,26 +703,55 @@ You can customize the following settings by editing the source code:
 - **White screen in fullscreen**: This has been fixed - refresh if you see it
 - **F button disappeared**: It might be dragged off-screen - exit and re-enter fullscreen
 
-### Multiple Connection Requests Overlapping
-- **FIXED**: Requests are now queued and processed one at a time
-- You'll see "Pending requests in queue: X" to know how many are waiting
-- Server won't crash if sessions timeout during approval
+### Problem: "web_client.html not found"
+**Solution:**
+Make sure both `web_client.html` and `web_client_trusted.html` are in the **same folder** as `ScreenShare.exe`!
+```
+Folder structure:
+  ScreenShare.exe          ✅
+  web_client.html          ✅
+  web_client_trusted.html  ✅
+```
 
-### Server Crashes on Timeout
-- **FIXED**: Added comprehensive exception handling
-- Server continues running even if connections timeout
-- All resources are properly cleaned up
+### Problem: Windows Defender Blocks EXE
+**Solution:**
+1. Click "More info"
+2. Click "Run anyway"
+This is a false positive - the app is safe!
+
+
+### Problem: "Cannot start screen share"
+**Possible causes:**
+- Port already in use
+- Firewall blocking
+**Solution:**
+```
+1. Close other screen sharing apps
+2. Check Windows Firewall
+3. Try different Cloudflare tunnel (restart option [3])
+```
+
+### Problem: Viewer Can't Connect
+**Check these:**
+1. ✅ Correct IP address?
+2. ✅ Correct port?
+3. ✅ Correct security code?
+4. ✅ Sharer is running?
+5. ✅ Same network (or using ngrok)?
+6. ✅ Firewall not blocking?
+**Solution:**
+```
+For internet sharing:
+1. Use Cloudflare tunnels (option [3] or [6])
+2. Share Cloudflare URL (not local IP)
+```
   
-
-
 ### Can't Hide Window
-
 - **Problem:** "Hide Window" option doesn't work
 - **Reason:** Only works on Windows
 - **Solution:** Feature is Windows-only by design
 
 ### Window Hidden, Can't Find It
-
 - **Problem:** Hid window, can't get it back
 - **Solutions:**
     1. Right-click tray icon → Show Window
@@ -621,6 +763,30 @@ You can customize the following settings by editing the source code:
 - **Solutions:**
     1. Place `icon.ico` in same folder as `main.py`
     2. Use fallback (still works, just different look)
+
+### Problem: Low Frame Rate
+**Possible causes:**
+- Slow network
+- High resolution screen
+**Solution:**
+```
+• Use local network sharing for better performance
+• Close unnecessary applications
+• Use wired connection instead of WiFi
+• Try trusted mode (option [5]) for fewer authentication delays
+```
+### Problem: Cloudflare Tunnel Not Working
+**Check:**
+1. ✅ Internet connection
+2. ✅ Cloudflare tunnel running (option [4] or [5] or [7])
+3. ✅ Keep tunnel window open
+**Solution:**
+```
+1. Check if tunnel is active
+2. Restart Cloudflare: Close and choose option 4] or [5] or [7] again
+3. Wait a few seconds for tunnel to establish
+4. Try to open it again
+```
 
 ### Quality Button Not Responding
 - Make sure window has focus
@@ -641,30 +807,35 @@ You can customize the following settings by editing the source code:
 
 ## 🆘 Troubleshooting Remote Access
 
-### ngrok Issues:
 
-**Problem: "Warning page" or "License agreement" shown instead of app**
-- **Solution:** This is ngrok's anti-phishing warning (normal for free tier)
-- Click **"Visit Site"** button to continue
-- Tell viewers to click through the warning
-- To skip: Upgrade to ngrok paid plan ($10/month)
+## 🌐 Network Modes
 
-**Problem: "Tunnel not found"**
-- Solution: Check if ngrok is running
-- Verify port number matches
+### 1. Same PC (localhost)
+**Use when:** Testing or demo on same computer
 
-**Problem: "Too many connections" (Free tier)**
-- Solution: Upgrade to paid plan or wait
+**Sharer:** Run option [1] or [2]
+**Viewer:** Use `localhost` or `127.0.0.1`
 
-**Problem: Slow performance**
-- Solution: ngrok free servers may be far away
-- Try different region: `ngrok http 8080 --region eu`
+### 2. Same Network (LAN)
+**Use when:** Same WiFi or office network
 
-**Problem: Page shows "Oracle Database" or random content**
-- **Cause:** You're seeing ngrok's interstitial warning page
-- **Solution:** Scroll down and click "Visit Site" button
-- This is NOT your application - it's ngrok's security check
-- The warning page HTML sometimes shows random cached content
+**Sharer:** Run option [1] or [2]
+**Viewer:** Use LAN IP (e.g., `192.168.1.100`)
+
+**Find your IP:**
+```
+Windows: ipconfig
+Look for "IPv4 Address"
+```
+
+### 3. Internet (Cloudflare)
+**Use when:** Different networks or worldwide
+
+**Sharer:** 
+1. Run option [5] (Cloudflare HTTP) or [7] (Cloudflare + Trusted)
+2. Note the Cloudflare URL
+**Viewer:** Use Cloudflare URL (e.g., `https://abc-def-123.trycloudflare.com`)
+
 
 ### Port Forwarding Issues:
 
@@ -949,13 +1120,16 @@ Not yet implemented, but planned for future:
 ```
 screen share/
 │
-├── main.py              # Main launcher with menu interface (START HERE!)
-├── server.py            # Desktop server (screen sharing via socket)
-├── web_server.py        # Web server (browser-based, mobile-friendly) 🆕
-├── web_client.html      # HTML/JS client for web browser 🆕
-├── client.py            # Desktop client (screen viewing)
-├── requirements.txt     # Python dependencies
-└── README.md           # This file
+├── main.py                    # Main launcher with menu interface (START HERE!)
+├── server.py                  # Desktop server (screen sharing via socket)
+├── web_server.py              # Web server (browser-based, mobile-friendly) 🆕
+├── web_server_trusted.py      # Trusted web server (no security code required) 🆕
+├── web_client.html            # HTML/JS client for web browser 🆕
+├── web_client_trusted.html    # HTML/JS client for trusted mode 🆕
+├── client.py                  # Desktop client (screen viewing)
+├── cloudflare_helper.py       # Cloudflare tunnel integration 🆕
+├── requirements.txt           # Python dependencies
+└── README.md                 # This file
 ```
 
 ## Files Description
@@ -967,6 +1141,12 @@ screen share/
   - Threading: ThreadingHTTPServer for multi-user support
   - Security: Sequential approval queue system
   - Thread-safe: Comprehensive locking mechanisms
+- **`web_server_trusted.py`**: HTTP server for trusted environments (no security code required). 🆕
+  - Features: Same high-quality streaming as regular web server
+  - Security: No authentication - instant access for trusted networks
+  - Use case: Family networks, trusted colleagues, demo environments
+  - Threading: ThreadingHTTPServer for multi-user support
+  - Quality: Persistent quality settings with session storage
 - **`web_client.html`**: Responsive web interface with modern features. 🆕
   - **UI Components**: Individual digit input boxes with auto-focus and paste support
   - **Zoom System**: Click-to-zoom with intelligent section targeting
@@ -975,73 +1155,18 @@ screen share/
   - **Connection Monitoring**: Auto-detects disconnections via /health endpoint
   - **Touch Support**: Full mobile gesture support
   - **Responsive Design**: Works on all screen sizes
+- **`web_client_trusted.html`**: Responsive web interface for trusted mode. 🆕
+  - **No Authentication**: Direct access without security code entry
+  - **Same Features**: All zoom, fullscreen, and quality controls as regular client
+  - **Instant Access**: Immediately starts viewing screen upon page load
+  - **Quality Controls**: High/Medium/Low quality switching with persistence
+  - **Mobile Optimized**: Same responsive design for all devices
 - **`client.py`**: Desktop client that connects to server and displays shared screen in OpenCV window.
+- **`cloudflare_helper.py`**: Cloudflare tunnel integration for internet access. 🆕
+  - Features: Quick tunnel setup, web and TCP mode support
+  - Integration: Works with both regular and trusted web servers
+  - Free: Unlimited bandwidth via Cloudflare's global network
 - **`requirements.txt`**: Lists all required Python packages for easy installation.
-
-## Recent Updates & Improvements
-
-### Version 2.1 (Latest) 🆕
-✨ **New Remote Access Features:**
-- 🌐 **Internet Sharing**: Share screen across different networks/locations
-- 🚀 **ngrok Integration**: Easy tunneling with `ngrok_helper.py`
-- 📖 **Remote Access Guide**: Comprehensive guide for all remote access methods
-- 🔌 **Port Forwarding Documentation**: Step-by-step router configuration
-- 🛡️ **VPN Setup Guide**: ZeroTier/Tailscale integration instructions
-
-🖱️ **Cursor Visibility:**
-- 👆 **Real-time Cursor**: Viewers can now see your mouse cursor
-- 🎨 **Smart Design**: Triple-layer cursor (white outline, black ring, red center)
-- 📍 **Precise Tracking**: Cursor position updates at stream frame rate
-- ✅ **Cross-Platform**: Works on Windows, macOS, and Linux via pyautogui
-
-### Version 2.0
-✨ **Major Feature Additions:**
-- 🔍 **Intelligent Zoom**: Click anywhere to zoom into that exact section
-- 🎬 **Advanced Fullscreen**: Draggable F button with keyboard shortcuts
-- ⌨️ **Keyboard Controls**: F key for fullscreen, Esc to exit
-- 📢 **Toast Notifications**: Real-time status updates for all events
-- 📊 **Connection Monitoring**: Health check endpoint with auto-reconnect
-- 🎨 **Modern UI**: Individual digit boxes with paste support
-
-🛠️ **Performance Improvements:**
-- 📈 **Maximum Quality**: Upgraded to 100% resolution at 95% JPEG quality
-- 🚀 **Faster Streaming**: Increased to 20 FPS with progressive JPEG
-- 🎯 **Smart Interpolation**: LANCZOS4 algorithm for best quality
-- 🔧 **Optimized Encoding**: Progressive JPEG with optimization enabled
-
-🔒 **Security & Stability Enhancements:**
-- 🔐 **Approval Queue System**: Sequential processing of connection requests
-- 🛡️ **Thread-Safe Operations**: Comprehensive locking prevents race conditions
-- 🔄 **Graceful Timeout Handling**: No crashes on session timeouts
-- 🚫 **Exception Handling**: Robust error handling throughout
-- 📋 **Queue Status Display**: Shows pending requests count
-
-🐛 **Bug Fixes:**
-- ✅ Fixed: White screen in fullscreen mode (CSS display issue)
-- ✅ Fixed: KeyError on session timeout (race condition)
-- ✅ Fixed: Overlapping approval prompts (queue system)
-- ✅ Fixed: Server crashes on timeout (exception handling)
-- ✅ Fixed: Single-click fullscreen toggle (changed to double-click)
-- ✅ Fixed: Zoom centers on click position (not image center)
-- ✅ Fixed: **ngrok warning page** - automatically bypassed with header
-- ✅ Quality dropdown appears when connected
-- ✅ Three quality options (High/Medium/Low)  
-- ✅ Real-time quality changes via `/set_quality` endpoint
-- ✅ Success toast notifications
-- ✅ Automatic stream refresh
-- ✅ Server-side quality logging
-- ✅ **Real-time performance** maintained with multiple users
-- ✅ **Adaptive FPS scaling** prevents lag under load
-- ✅ **Quality-specific caching** eliminates redundant processing
-- ✅ **Per-user optimization** allows mixed quality levels
-- ✅ **Performance monitoring** provides real-time insights
-- ✅ **Memory efficiency** scales to any number of users
-- ✅ **Intelligent quality recommendations** for optimal experience
-
-🌐 **ngrok Integration:**
-- 🎯 **Auto-Bypass Warning**: Sends `ngrok-skip-browser-warning` header automatically
-- 📱 **Direct Access**: Viewers skip the "Visit Site" button completely
-- 🚀 **Better UX**: One less step for viewers to access screen share
 
 ## Technical Architecture
 
@@ -1092,39 +1217,6 @@ Viewer Screen (with controls)
 5. **Frame Rate Control**: Sleep-based limiting (0.05s = 20 FPS)
 6. **Image Quality**: LANCZOS4 interpolation for scaling
 
-## License
-
-This project is open source and available for educational purposes.
-
-## Contributing
-
-Feel free to fork, modify, and improve this project!
-
-## Support
-
-If you encounter any issues, please check the troubleshooting section or create an issue in the repository.
-
-## Quick Reference Card
-
-### For Server (PC Sharing Screen):
-```bash
-python main.py
-Choose option 2 (Web Browser)
-Share the security code and URL
-Approve connections when prompted
-Press Ctrl+C to stop
-```
-
-### For Viewer (Mobile/Browser):
-```
-1. Connect to same WiFi as server
-2. Open browser: http://SERVER_IP:8080
-3. Enter 6-digit security code
-4. Wait for approval
-5. Double-click F or press F key for fullscreen
-6. Click screen to zoom, drag to pan
-7. Press Esc to exit fullscreen
-```
 
 ### Keyboard Shortcuts (Web Client):
 | Key | Action |
@@ -1167,7 +1259,98 @@ Press Ctrl+C to stop
 - **Code Length**: 6 characters
 - **Approval Timeout**: 60 seconds
 - **Health Check**: Every 3 seconds
+---
+## ❓ FAQ
+
+### Q: Do viewers need to install anything?
+
+**A:** No! All modes use web browsers (except 1 & 2).
+- All screen sharing is browser-based
+- Works on any device with a web browser
+- No installation required for viewers
+
+**Recommendation:** Share the URL and viewers just open their browser!
 
 ---
 
-**Enjoy secure screen sharing! 🎉**
+### Q: Is this free?
+
+**A:** Yes! Completely free to use.
+
+**Cloudflare tunnels:** Free and unlimited
+- ✅ Unlimited bandwidth
+- ✅ No session limits  
+- ✅ Global edge network
+- ✅ HTTPS encryption
+
+---
+
+### Q: Can I use this for work/commercial?
+
+**A:** Yes! Free to use for personal and commercial projects.
+
+---
+
+### Q: How do I stop sharing?
+
+**A:** Press `Ctrl+C` in the terminal, or close the window.
+
+---
+
+### Q: Can I customize the security code?
+
+**A:** No, it's randomly generated for security.
+
+---
+
+### Q: Does this work on Mac/Linux?
+
+**A:** This EXE is **Windows only**. 
+
+For Mac/Linux, use the Python source code instead.
+
+---
+
+### Q: How many people can view at once?
+
+**All modes:** Many viewers (limited by your bandwidth)
+- Multiple people can connect simultaneously
+- Each uses same URL (and security code if not in trusted mode)
+- Great for presentations and demonstrations
+
+---
+
+### Q: Is my data encrypted?
+
+**For Cloudflare (internet):** Yes, HTTPS encrypted
+**For local network:** Unencrypted (LAN only)
+**Trusted mode:** Same encryption as regular mode (just no authentication)
+
+
+---
+## License
+
+This project is open source and available for educational purposes.
+
+## Contributing
+
+Feel free to fork, modify, and improve this project!
+
+## 📞 Support
+
+### Need Help?
+1. **Read this README** (you're here!)
+2. **Check Troubleshooting** section above or create an issue in the repository.
+
+### Found a Bug?
+Report issues with these details:
+- Windows version
+- What you were doing
+- Error message (if any)
+- Steps to reproduce
+
+## 🎉 Enjoy!
+Thank you for using **Screen Sharing Application**!
+**Happy screen sharing!** 🚀✨
+
+*No installation required • Portable • Secure • Easy to use*
